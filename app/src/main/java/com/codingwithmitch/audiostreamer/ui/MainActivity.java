@@ -14,7 +14,7 @@ public class MainActivity extends AppCompatActivity
     private static final String TAG = "MainActivity";
 
     //UI Components
-    private ProgressBar mProgressBar;
+
 
     // Vars
 
@@ -23,7 +23,6 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mProgressBar = findViewById(R.id.progress_bar);
 
 
     }
