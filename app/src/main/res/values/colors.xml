@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#262626</color>
+    <color name="colorPrimaryDark">#000</color>
+    <color name="colorAccent">#fff</color>
+
+    <color name="grey">#b2b2b2</color>
+    <color name="lightGrey">#e2e2e2</color>
+    <color name="white">#ffffff</color>
+    <color name="green">#1db954</color>
+
+    <color name="notification_bg">#e91e63</color>
+</resources>

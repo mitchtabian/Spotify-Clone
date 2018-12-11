@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "330172065049",
+    "firebase_url": "https://audiostreamer-8bfdd.firebaseio.com",
+    "project_id": "audiostreamer-8bfdd",
+    "storage_bucket": "audiostreamer-8bfdd.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:330172065049:android:c9f3a95899014743",
+        "android_client_info": {
+          "package_name": "com.codingwithmitch.audiostreamer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "330172065049-46odoie68nrdjpr7m028ef5c3uleld70.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCgQ7DLvBsMbACDMYGGIQbUeMunAsheu2U"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
