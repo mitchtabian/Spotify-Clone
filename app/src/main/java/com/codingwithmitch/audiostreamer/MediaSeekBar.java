@@ -1,4 +1,4 @@
-package com.codingwithmitch.audiostreamer.ui;
+package com.codingwithmitch.audiostreamer;
 
 import android.content.Context;
 import android.support.v4.media.MediaMetadataCompat;
