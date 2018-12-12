@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.ProgressBar;
 
 import com.codingwithmitch.audiostreamer.R;
+import com.codingwithmitch.audiostreamer.models.Artist;
 
 
 public class MainActivity extends AppCompatActivity implements IMainActivity
@@ -27,8 +28,21 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
         mProgressBar = findViewById(R.id.progress_bar);
 
 //        testHomeFragment();
-        testCategoryFragment();
+//        testCategoryFragment();
+        testPlaylistFragment();
     }
+
+    private void testPlaylistFragment(){
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main_container,
+                        PlaylistFragment.newInstance(
+                                "Podcasts",
+                                new Artist("CodingWithMitch",
+                                        "https://assets.blubrry.com/coverart/orig/654497-584077.png",
+                                        "m2BE0t4z0raEqqqgHXj4")
+                        )).commit();
+    }
+
 
     private void testCategoryFragment(){
         getSupportFragmentManager().beginTransaction()
