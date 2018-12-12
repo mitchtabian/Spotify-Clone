@@ -5,4 +5,5 @@ public interface IMainActivity {
     void showProgressBar();
 
     void hideProgressBar();
+
 }

@@ -94,7 +94,6 @@ public class HomeFragment extends Fragment implements
 
     @Override
     public void onCategorySelected(int position) {
-
     }
 
     @Override

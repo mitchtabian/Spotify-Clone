@@ -5,6 +5,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 
@@ -62,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
         showFragment(fragment, false);
     }
 
-	private void showFragment(Fragment fragment, boolean backwardsMovement){
+    private void showFragment(Fragment fragment, boolean backwardsMovement){
         // Show selected fragment
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         if(backwardsMovement){
@@ -94,6 +95,44 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
             showFragment(fragments.get(fragments.size() - 2), true);
         }
         super.onBackPressed();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt("active_fragments", MainActivityFragmentManager.getInstance().getFragments().size());
+        Log.d(TAG, "onSaveInstanceState: " + MainActivityFragmentManager.getInstance().getFragments().size());
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        restoreFragmentView(savedInstanceState);
+    }
+
+    private void restoreFragmentView(Bundle bundle){
+        int numFragments = bundle.getInt("active_fragments");
+        Log.d(TAG, "onSaveInstanceState: num fragments: " + numFragments);
+        if(numFragments > 0){
+            HomeFragment homeFragment = (HomeFragment)getSupportFragmentManager()
+                    .findFragmentByTag(getString(R.string.fragment_home));
+            if(homeFragment != null){
+                Log.d(TAG, "restoreFragmentView: HomeFragment is ALIVE");
+                MainActivityFragmentManager.getInstance().addFragment(homeFragment);
+            }
+            CategoryFragment categoryFragment = (CategoryFragment)getSupportFragmentManager()
+                    .findFragmentByTag(getString(R.string.fragment_category));
+            if(categoryFragment != null){
+                Log.d(TAG, "restoreFragmentView: CategoryFragment is ALIVE");
+                MainActivityFragmentManager.getInstance().addFragment(categoryFragment);
+            }
+            PlaylistFragment playlistFragment = (PlaylistFragment)getSupportFragmentManager()
+                    .findFragmentByTag(getString(R.string.fragment_playlist));
+            if(playlistFragment != null){
+                Log.d(TAG, "restoreFragmentView: PlaylistFragment is ALIVE");
+                MainActivityFragmentManager.getInstance().addFragment(playlistFragment);
+            }
+        }
     }
 
     @Override
