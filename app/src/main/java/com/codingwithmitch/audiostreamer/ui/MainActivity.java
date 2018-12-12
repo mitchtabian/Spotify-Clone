@@ -33,7 +33,9 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
         setContentView(R.layout.activity_main);
         mProgressBar = findViewById(R.id.progress_bar);
 
-        loadFragment(HomeFragment.newInstance(), true);
+        if(savedInstanceState == null){
+            loadFragment(HomeFragment.newInstance(), false);
+        }
     }
 
     private void loadFragment(Fragment fragment, boolean lateralMovement){
@@ -133,6 +135,18 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
                 MainActivityFragmentManager.getInstance().addFragment(playlistFragment);
             }
         }
+    }
+
+    @Override
+    public void onCategorySelected(String category) {
+        Log.d(TAG, "onCategorySelected: clicked.");
+        loadFragment(CategoryFragment.newInstance(category), true);
+    }
+
+    @Override
+    public void onArtistSelected(String category, Artist artist) {
+        Log.d(TAG, "onArtistSelected: clicked.");
+        loadFragment(PlaylistFragment.newInstance(category, artist), true);
     }
 
     @Override

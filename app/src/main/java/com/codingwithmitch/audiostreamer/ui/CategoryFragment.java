@@ -119,7 +119,7 @@ public class CategoryFragment extends Fragment implements
 
     @Override
     public void onArtistSelected(int position) {
-
+        mIMainActivity.onArtistSelected(mSelectedCategory, mArtists.get(position));
     }
 }
 

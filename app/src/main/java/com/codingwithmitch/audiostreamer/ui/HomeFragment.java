@@ -94,6 +94,7 @@ public class HomeFragment extends Fragment implements
 
     @Override
     public void onCategorySelected(int position) {
+        mIMainActivity.onCategorySelected(mCategories.get(position));
     }
 
     @Override
