@@ -96,8 +96,8 @@ public class PlaylistFragment extends Fragment implements
         mIMainActivity.setActionBarTitle(mSelectedArtist.getTitle());
     }
 
-    public void retrieveArtists(){
-        Log.d(TAG, "retrieveArtists: called.");
+    public void retrieveMedia(){
+        Log.d(TAG, "retrieveMedia: called.");
         mIMainActivity.showProgressBar();
 
         FirebaseFirestore firestore = FirebaseFirestore.getInstance();
@@ -164,7 +164,7 @@ public class PlaylistFragment extends Fragment implements
             mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
             mAdapter = new PlaylistRecyclerAdapter(getActivity(), mMediaList, this);
             mRecyclerView.setAdapter(mAdapter);
-            retrieveArtists();
+            retrieveMedia();
         }
     }
 
