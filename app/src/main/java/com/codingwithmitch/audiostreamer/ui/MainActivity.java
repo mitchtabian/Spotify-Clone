@@ -12,6 +12,8 @@ import com.codingwithmitch.audiostreamer.R;
 import com.codingwithmitch.audiostreamer.models.Artist;
 import com.codingwithmitch.audiostreamer.util.MainActivityFragmentManager;
 
+import java.util.ArrayList;
+
 
 public class MainActivity extends AppCompatActivity implements IMainActivity
 {
@@ -56,6 +58,39 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
         transaction.commit();
 
         MainActivityFragmentManager.getInstance().addFragment(fragment);
+
+        showFragment(fragment, false);
+    }
+
+    private void showFragment(Fragment fragment, boolean backwardsMovement){
+        // Show selected fragment
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        if(backwardsMovement){
+            transaction.setCustomAnimations(R.anim.enter_from_left, R.anim.exit_to_right);
+        }
+        transaction.show(fragment);
+        transaction.commit();
+
+        // hide the others
+        for(Fragment f: MainActivityFragmentManager.getInstance().getFragments()){
+            if(f != null){
+                if(!f.getTag().equals(fragment.getTag())){
+                    FragmentTransaction t = getSupportFragmentManager().beginTransaction();
+                    t.hide(f);
+                    t.commit();
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        ArrayList<Fragment> fragments = new ArrayList<>(MainActivityFragmentManager.getInstance().getFragments());
+        if(fragments.size() > 1){
+            showFragment(fragments.get(fragments.size() - 2), true);
+            MainActivityFragmentManager.getInstance().removeFragment(fragments.size() - 1);
+        }
+        super.onBackPressed();
     }
 
     @Override
