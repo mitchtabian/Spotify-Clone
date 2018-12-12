@@ -39,6 +39,10 @@ public class HomeFragment extends Fragment implements
     private ArrayList<String> mCategories = new ArrayList<>();
     private IMainActivity mIMainActivity;
 
+    public static HomeFragment newInstance() {
+        return new HomeFragment();
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
