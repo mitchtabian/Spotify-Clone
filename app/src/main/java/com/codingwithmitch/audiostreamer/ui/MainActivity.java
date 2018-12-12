@@ -1,6 +1,8 @@
 package com.codingwithmitch.audiostreamer.ui;
 
 
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -27,31 +29,30 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
         setContentView(R.layout.activity_main);
         mProgressBar = findViewById(R.id.progress_bar);
 
-//        testHomeFragment();
-//        testCategoryFragment();
-        testPlaylistFragment();
+        loadFragment(HomeFragment.newInstance(), true);
     }
 
-    private void testPlaylistFragment(){
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.main_container,
-                        PlaylistFragment.newInstance(
-                                "Podcasts",
-                                new Artist("CodingWithMitch",
-                                        "https://assets.blubrry.com/coverart/orig/654497-584077.png",
-                                        "m2BE0t4z0raEqqqgHXj4")
-                        )).commit();
-    }
+    private void loadFragment(Fragment fragment, boolean lateralMovement){
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 
+        if(lateralMovement){
+            transaction.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left);
+        }
 
-    private void testCategoryFragment(){
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.main_container, CategoryFragment.newInstance("Podcasts")).commit();
-    }
-
-    private void testHomeFragment(){
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.main_container, HomeFragment.newInstance()).commit();
+        String tag = "";
+        if(fragment instanceof HomeFragment){
+            tag = getString(R.string.fragment_home);
+        }
+        else if(fragment instanceof CategoryFragment){
+            tag = getString(R.string.fragment_category);
+            transaction.addToBackStack(tag);
+        }
+        else if(fragment instanceof PlaylistFragment){
+            tag = getString(R.string.fragment_playlist);
+            transaction.addToBackStack(tag);
+        }
+        transaction.add(R.id.main_container, fragment, tag);
+        transaction.commit();
     }
 
     @Override
