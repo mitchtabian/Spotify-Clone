@@ -30,7 +30,7 @@ public class MediaControllerFragment extends Fragment implements
     private MediaSeekBar mSeekBarAudio;
 
     // Vars
-    
+
 
 
 
@@ -43,11 +43,8 @@ public class MediaControllerFragment extends Fragment implements
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        mSongTitle = view.findViewById(R.id.media_song_title);
-        mPlayPause = view.findViewById(R.id.play_pause);
-        mSeekBarAudio = view.findViewById(R.id.seekbar_audio);
-
-        mPlayPause.setOnClickListener(this);
+        
+        
     }
 
     @Override
