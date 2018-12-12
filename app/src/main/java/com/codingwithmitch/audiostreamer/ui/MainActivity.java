@@ -10,6 +10,7 @@ import android.widget.ProgressBar;
 
 import com.codingwithmitch.audiostreamer.R;
 import com.codingwithmitch.audiostreamer.models.Artist;
+import com.codingwithmitch.audiostreamer.util.MainActivityFragmentManager;
 
 
 public class MainActivity extends AppCompatActivity implements IMainActivity
@@ -53,6 +54,8 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
         }
         transaction.add(R.id.main_container, fragment, tag);
         transaction.commit();
+
+        MainActivityFragmentManager.getInstance().addFragment(fragment);
     }
 
     @Override
