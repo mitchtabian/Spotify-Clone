@@ -87,8 +87,11 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
     public void onBackPressed() {
         ArrayList<Fragment> fragments = new ArrayList<>(MainActivityFragmentManager.getInstance().getFragments());
         if(fragments.size() > 1){
-            showFragment(fragments.get(fragments.size() - 2), true);
+            FragmentTransaction t = getSupportFragmentManager().beginTransaction();
+            t.remove(fragments.get(fragments.size() - 1));
+            t.commit();
             MainActivityFragmentManager.getInstance().removeFragment(fragments.size() - 1);
+            showFragment(fragments.get(fragments.size() - 2), true);
         }
         super.onBackPressed();
     }
