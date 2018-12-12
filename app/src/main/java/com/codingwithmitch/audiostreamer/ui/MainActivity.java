@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
         showFragment(fragment, false);
     }
 
-    private void showFragment(Fragment fragment, boolean backwardsMovement){
+	private void showFragment(Fragment fragment, boolean backwardsMovement){
         // Show selected fragment
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         if(backwardsMovement){
@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
             if(f != null){
                 if(!f.getTag().equals(fragment.getTag())){
                     FragmentTransaction t = getSupportFragmentManager().beginTransaction();
-                    t.hide(f);
+                    t.hide(f); // will not destroy fragment
                     t.commit();
                 }
             }
@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
         ArrayList<Fragment> fragments = new ArrayList<>(MainActivityFragmentManager.getInstance().getFragments());
         if(fragments.size() > 1){
             FragmentTransaction t = getSupportFragmentManager().beginTransaction();
-            t.remove(fragments.get(fragments.size() - 1));
+            t.remove(fragments.get(fragments.size() - 1)); // destroy fragment
             t.commit();
             MainActivityFragmentManager.getInstance().removeFragment(fragments.size() - 1);
             showFragment(fragments.get(fragments.size() - 2), true);
