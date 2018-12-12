@@ -150,6 +150,11 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
     }
 
     @Override
+    public void setActionBarTitle(String title) {
+        getSupportActionBar().setTitle(title);
+    }
+
+    @Override
     public void showProgressBar() {
         mProgressBar.setVisibility(View.VISIBLE);
     }
