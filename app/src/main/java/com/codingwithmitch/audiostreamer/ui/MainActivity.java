@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
 
     private void testHomeFragment(){
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.main_container, new HomeFragment()).commit();
+                .replace(R.id.main_container, HomeFragment.newInstance()).commit();
     }
 
     @Override
