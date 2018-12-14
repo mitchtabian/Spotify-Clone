@@ -34,11 +34,12 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
         mProgressBar = findViewById(R.id.progress_bar);
 
         if(savedInstanceState == null){
-            loadFragment(HomeFragment.newInstance(), false);
+            loadFragment(HomeFragment.newInstance(), true);
         }
     }
 
     private void loadFragment(Fragment fragment, boolean lateralMovement){
+
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 
         if(lateralMovement){
@@ -57,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
             tag = getString(R.string.fragment_playlist);
             transaction.addToBackStack(tag);
         }
+
         transaction.add(R.id.main_container, fragment, tag);
         transaction.commit();
 
@@ -65,45 +67,54 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
         showFragment(fragment, false);
     }
 
-    private void showFragment(Fragment fragment, boolean backwardsMovement){
-        // Show selected fragment
+
+    private void showFragment(Fragment fragment, boolean backswardsMovement){
+
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        if(backwardsMovement){
+
+        if(backswardsMovement){
             transaction.setCustomAnimations(R.anim.enter_from_left, R.anim.exit_to_right);
         }
+
         transaction.show(fragment);
         transaction.commit();
 
-        // hide the others
         for(Fragment f: MainActivityFragmentManager.getInstance().getFragments()){
             if(f != null){
                 if(!f.getTag().equals(fragment.getTag())){
                     FragmentTransaction t = getSupportFragmentManager().beginTransaction();
-                    t.hide(f); // will not destroy fragment
+                    t.hide(f);
                     t.commit();
                 }
             }
         }
+
+
+        Log.d(TAG, "showFragment: num fragments: " + MainActivityFragmentManager.getInstance().getFragments().size());
+
     }
 
     @Override
     public void onBackPressed() {
         ArrayList<Fragment> fragments = new ArrayList<>(MainActivityFragmentManager.getInstance().getFragments());
+
         if(fragments.size() > 1){
-            FragmentTransaction t = getSupportFragmentManager().beginTransaction();
-            t.remove(fragments.get(fragments.size() - 1)); // destroy fragment
-            t.commit();
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.remove(fragments.get(fragments.size() - 1));
+            transaction.commit();
+
             MainActivityFragmentManager.getInstance().removeFragment(fragments.size() - 1);
             showFragment(fragments.get(fragments.size() - 2), true);
         }
+
         super.onBackPressed();
     }
+
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt("active_fragments", MainActivityFragmentManager.getInstance().getFragments().size());
-        Log.d(TAG, "onSaveInstanceState: " + MainActivityFragmentManager.getInstance().getFragments().size());
     }
 
     @Override
@@ -114,38 +125,49 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
 
     private void restoreFragmentView(Bundle bundle){
         int numFragments = bundle.getInt("active_fragments");
-        Log.d(TAG, "onSaveInstanceState: num fragments: " + numFragments);
         if(numFragments > 0){
             HomeFragment homeFragment = (HomeFragment)getSupportFragmentManager()
                     .findFragmentByTag(getString(R.string.fragment_home));
             if(homeFragment != null){
-                Log.d(TAG, "restoreFragmentView: HomeFragment is ALIVE");
+                Log.d(TAG, "restoreFragmentView: HomeFragment is ALIVE!");
                 MainActivityFragmentManager.getInstance().addFragment(homeFragment);
             }
+
             CategoryFragment categoryFragment = (CategoryFragment)getSupportFragmentManager()
                     .findFragmentByTag(getString(R.string.fragment_category));
             if(categoryFragment != null){
-                Log.d(TAG, "restoreFragmentView: CategoryFragment is ALIVE");
+                Log.d(TAG, "restoreFragmentView: CategoryFragment is ALIVE!");
                 MainActivityFragmentManager.getInstance().addFragment(categoryFragment);
             }
+
             PlaylistFragment playlistFragment = (PlaylistFragment)getSupportFragmentManager()
                     .findFragmentByTag(getString(R.string.fragment_playlist));
             if(playlistFragment != null){
-                Log.d(TAG, "restoreFragmentView: PlaylistFragment is ALIVE");
+                Log.d(TAG, "restoreFragmentView: PlaylistFragment is ALIVE!");
                 MainActivityFragmentManager.getInstance().addFragment(playlistFragment);
             }
+
+
         }
     }
 
     @Override
+    public void hideProgressBar() {
+        mProgressBar.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void showPrgressBar() {
+        mProgressBar.setVisibility(View.VISIBLE);
+    }
+
+    @Override
     public void onCategorySelected(String category) {
-        Log.d(TAG, "onCategorySelected: clicked.");
         loadFragment(CategoryFragment.newInstance(category), true);
     }
 
     @Override
     public void onArtistSelected(String category, Artist artist) {
-        Log.d(TAG, "onArtistSelected: clicked.");
         loadFragment(PlaylistFragment.newInstance(category, artist), true);
     }
 
@@ -154,15 +176,6 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
         getSupportActionBar().setTitle(title);
     }
 
-    @Override
-    public void showProgressBar() {
-        mProgressBar.setVisibility(View.VISIBLE);
-    }
-
-    @Override
-    public void hideProgressBar() {
-        mProgressBar.setVisibility(View.GONE);
-    }
 }
 
 

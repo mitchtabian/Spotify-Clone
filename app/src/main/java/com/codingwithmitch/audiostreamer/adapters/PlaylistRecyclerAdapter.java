@@ -1,6 +1,5 @@
 package com.codingwithmitch.audiostreamer.adapters;
 
-
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;

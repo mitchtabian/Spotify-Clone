@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,8 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 
-public class HomeFragment extends Fragment implements
-        HomeRecyclerAdapter.IHomeSelector
+public class HomeFragment extends Fragment implements HomeRecyclerAdapter.IHomeSelector
 {
 
     private static final String TAG = "HomeFragment";
@@ -39,13 +39,12 @@ public class HomeFragment extends Fragment implements
     private ArrayList<String> mCategories = new ArrayList<>();
     private IMainActivity mIMainActivity;
 
-    public static HomeFragment newInstance() {
+    public static HomeFragment newInstance(){
         return new HomeFragment();
     }
 
     @Override
     public void onHiddenChanged(boolean hidden) {
-        super.onHiddenChanged(hidden);
         if(!hidden){
             mIMainActivity.setActionBarTitle(getString(R.string.categories));
         }
@@ -63,22 +62,12 @@ public class HomeFragment extends Fragment implements
         mIMainActivity.setActionBarTitle(getString(R.string.categories));
     }
 
-    private void initRecyclerView(View view){
-        if(mRecyclerView == null){
-            mRecyclerView = view.findViewById(R.id.recycler_view);
-            mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-            mAdapter = new HomeRecyclerAdapter(getActivity(), mCategories, this);
-            mRecyclerView.setAdapter(mAdapter);
-            retrieveCategories();
-        }
-    }
-
-    public void retrieveCategories(){
-        mIMainActivity.showProgressBar();
+    private void retrieveCategories(){
+        mIMainActivity.showPrgressBar();
 
         FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
-        DocumentReference ref  = firestore
+        DocumentReference ref = firestore
                 .collection(getString(R.string.collection_audio))
                 .document(getString(R.string.document_categories));
 
@@ -87,23 +76,28 @@ public class HomeFragment extends Fragment implements
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if(task.isSuccessful()){
                     DocumentSnapshot doc = task.getResult();
-                    HashMap<String, String> categoriesMap = (HashMap)doc.getData().get(getString(R.string.field_categories));
+                    Log.d(TAG, "onComplete: " + doc);
+                    HashMap<String, String> categoriesMap = (HashMap)doc.getData().get("categories");
                     mCategories.addAll(categoriesMap.keySet());
                 }
                 updateDataSet();
             }
         });
-
     }
 
     private void updateDataSet(){
-        mAdapter.notifyDataSetChanged();
         mIMainActivity.hideProgressBar();
+        mAdapter.notifyDataSetChanged();
     }
 
-    @Override
-    public void onCategorySelected(int position) {
-        mIMainActivity.onCategorySelected(mCategories.get(position));
+    private void initRecyclerView(View view) {
+        if(mRecyclerView == null){
+            mRecyclerView = view.findViewById(R.id.recycler_view);
+            mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+            mAdapter = new HomeRecyclerAdapter(mCategories, getActivity(), this);
+            mRecyclerView.setAdapter(mAdapter);
+            retrieveCategories();
+        }
     }
 
     @Override
@@ -111,6 +105,14 @@ public class HomeFragment extends Fragment implements
         super.onAttach(context);
         mIMainActivity = (IMainActivity) getActivity();
     }
+
+    @Override
+    public void onCategorySelected(int postion) {
+        Log.d(TAG, "onCategorySelected: list item is clicked!");
+        mIMainActivity.onCategorySelected(mCategories.get(postion));
+    }
+
+
 }
 
 

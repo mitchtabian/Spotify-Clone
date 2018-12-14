@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 
 import com.codingwithmitch.audiostreamer.R;
 import com.codingwithmitch.audiostreamer.adapters.CategoryRecyclerAdapter;
+import com.codingwithmitch.audiostreamer.adapters.HomeRecyclerAdapter;
 import com.codingwithmitch.audiostreamer.models.Artist;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -26,8 +27,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 
 
-public class CategoryFragment extends Fragment implements
-        CategoryRecyclerAdapter.ICategorySelector
+public class CategoryFragment extends Fragment implements CategoryRecyclerAdapter.ICategorySelector
 {
 
     private static final String TAG = "CategoryFragment";
@@ -36,14 +36,13 @@ public class CategoryFragment extends Fragment implements
     // UI Components
     private RecyclerView mRecyclerView;
 
-
     // Vars
     private CategoryRecyclerAdapter mAdapter;
     private ArrayList<Artist> mArtists = new ArrayList<>();
     private IMainActivity mIMainActivity;
-    public String mSelectedCategory;
+    private String mSelectedCategory;
 
-    public static CategoryFragment newInstance(String category) {
+    public static CategoryFragment newInstance(String category){
         CategoryFragment categoryFragment = new CategoryFragment();
         Bundle args = new Bundle();
         args.putString("category", category);
@@ -53,12 +52,10 @@ public class CategoryFragment extends Fragment implements
 
     @Override
     public void onHiddenChanged(boolean hidden) {
-        super.onHiddenChanged(hidden);
         if(!hidden){
             mIMainActivity.setActionBarTitle(mSelectedCategory);
         }
     }
-
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -67,6 +64,7 @@ public class CategoryFragment extends Fragment implements
             mSelectedCategory = getArguments().getString("category");
         }
     }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -80,12 +78,12 @@ public class CategoryFragment extends Fragment implements
         mIMainActivity.setActionBarTitle(mSelectedCategory);
     }
 
-    public void retrieveArtists(){
-        mIMainActivity.showProgressBar();
+    private void retrieveArtists(){
+        mIMainActivity.showPrgressBar();
 
         FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
-        Query query  = firestore
+        Query query = firestore
                 .collection(getString(R.string.collection_audio))
                 .document(getString(R.string.document_categories))
                 .collection(mSelectedCategory);
@@ -93,12 +91,13 @@ public class CategoryFragment extends Fragment implements
         query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if (task.isSuccessful()) {
-                    for (QueryDocumentSnapshot document : task.getResult()) {
+                if(task.isSuccessful()){
+                    for(QueryDocumentSnapshot document: task.getResult()){
                         mArtists.add(document.toObject(Artist.class));
                     }
-                } else {
-                    Log.d(TAG, "Error getting documents: ", task.getException());
+                }
+                else{
+                    Log.d(TAG, "onComplete: error getting documents: " + task.getException());
                 }
                 updateDataSet();
             }
@@ -106,30 +105,30 @@ public class CategoryFragment extends Fragment implements
     }
 
     private void updateDataSet(){
-        mAdapter.notifyDataSetChanged();
         mIMainActivity.hideProgressBar();
+        mAdapter.notifyDataSetChanged();
     }
 
-    private void initRecyclerView(View view){
+    private void initRecyclerView(View view) {
         if(mRecyclerView == null){
             mRecyclerView = view.findViewById(R.id.recycler_view);
             mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-            mAdapter = new CategoryRecyclerAdapter(getActivity(), mArtists, this);
+            mAdapter = new CategoryRecyclerAdapter(getActivity(),  mArtists, this);
             mRecyclerView.setAdapter(mAdapter);
             retrieveArtists();
         }
+    }
 
+
+    @Override
+    public void onArtistSelected(int position) {
+        mIMainActivity.onArtistSelected(mSelectedCategory, mArtists.get(position));
     }
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         mIMainActivity = (IMainActivity) getActivity();
-    }
-
-    @Override
-    public void onArtistSelected(int position) {
-        mIMainActivity.onArtistSelected(mSelectedCategory, mArtists.get(position));
     }
 }
 

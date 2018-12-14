@@ -32,6 +32,7 @@ public class MediaControllerFragment extends Fragment implements
     private ImageView mPlayPause;
     private MediaSeekBar mSeekBarAudio;
 
+
     // Vars
     private IMainActivity mIMainActivity;
 
@@ -50,10 +51,9 @@ public class MediaControllerFragment extends Fragment implements
         mPlayPause = view.findViewById(R.id.play_pause);
         mSeekBarAudio = view.findViewById(R.id.seekbar_audio);
 
-
         mPlayPause.setOnClickListener(this);
-
     }
+
 
     @Override
     public void onClick(View view) {
@@ -73,8 +73,8 @@ public class MediaControllerFragment extends Fragment implements
         }
     }
 
-    public void setMediaItem(MediaMetadataCompat mediaItem){
-        mSongTitle.setText(mediaItem.getString(MediaMetadataCompat.METADATA_KEY_TITLE));
+    public void setMediaTitle(MediaMetadataCompat mediaItem){
+        mSongTitle.setText(mediaItem.getDescription().getTitle());
     }
 
     @Override
@@ -83,6 +83,21 @@ public class MediaControllerFragment extends Fragment implements
         mIMainActivity = (IMainActivity) getActivity();
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

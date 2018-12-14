@@ -4,9 +4,9 @@ import com.codingwithmitch.audiostreamer.models.Artist;
 
 public interface IMainActivity {
 
-    void showProgressBar();
-
     void hideProgressBar();
+
+    void showPrgressBar();
 
     void onCategorySelected(String category);
 

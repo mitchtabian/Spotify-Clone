@@ -3,8 +3,7 @@ package com.codingwithmitch.audiostreamer.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class Artist implements Parcelable{
-
+public class Artist implements Parcelable {
 
     private String title;
     private String image;
@@ -25,7 +24,7 @@ public class Artist implements Parcelable{
         artist_id = in.readString();
     }
 
-    public static final Parcelable.Creator<Artist> CREATOR = new Parcelable.Creator<Artist>() {
+    public static final Creator<Artist> CREATOR = new Creator<Artist>() {
         @Override
         public Artist createFromParcel(Parcel in) {
             return new Artist(in);
@@ -60,6 +59,7 @@ public class Artist implements Parcelable{
     public void setArtist_id(String artist_id) {
         this.artist_id = artist_id;
     }
+
 
     @Override
     public int describeContents() {

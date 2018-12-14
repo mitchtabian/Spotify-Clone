@@ -21,5 +21,4 @@
         android:layout_centerVertical="true"
         android:layout_toEndOf="@+id/category_icon"
         android:layout_marginStart="15dp"/>
-
 </RelativeLayout>

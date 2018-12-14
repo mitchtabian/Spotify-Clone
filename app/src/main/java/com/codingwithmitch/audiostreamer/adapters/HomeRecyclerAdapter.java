@@ -1,6 +1,5 @@
 package com.codingwithmitch.audiostreamer.adapters;
 
-
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
@@ -16,6 +15,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.codingwithmitch.audiostreamer.R;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class HomeRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -24,18 +24,17 @@ public class HomeRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     private Context mContext;
     private IHomeSelector mIHomeSelector;
 
-    public HomeRecyclerAdapter(Context context, ArrayList<String> categories, IHomeSelector homeSelector) {
-        this.mCategories = categories;
-        this.mContext = context;
-        this.mIHomeSelector = homeSelector;
+    public HomeRecyclerAdapter(ArrayList<String> mCategories, Context mContext, IHomeSelector mIHomeSelector) {
+        this.mCategories = mCategories;
+        this.mContext = mContext;
+        this.mIHomeSelector = mIHomeSelector;
     }
 
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         View view = LayoutInflater.from(mContext).inflate(R.layout.layout_category_list_item, null);
-        ViewHolder vh = new ViewHolder(view, mIHomeSelector);
-        return vh;
+        return new ViewHolder(view, mIHomeSelector);
     }
 
     @Override
@@ -43,22 +42,26 @@ public class HomeRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
         ((ViewHolder)viewHolder).category.setText(mCategories.get(i));
 
-        RequestOptions options = new RequestOptions()
+
+        RequestOptions requestOptions = new RequestOptions()
                 .error(R.drawable.ic_launcher_background);
 
         Drawable iconResource = null;
-        switch (mCategories.get(i)){
+        switch(mCategories.get(i)){
             case "Music":{
-                iconResource = ContextCompat.getDrawable(mContext,R.drawable.ic_audiotrack_white_24dp);
+                iconResource = ContextCompat.getDrawable(mContext, R.drawable.ic_audiotrack_white_24dp);
                 break;
             }
+
             case "Podcasts":{
-                iconResource = ContextCompat.getDrawable(mContext,R.drawable.ic_mic_white_24dp);
+                iconResource = ContextCompat.getDrawable(mContext, R.drawable.ic_mic_white_24dp);
                 break;
             }
         }
+
+
         Glide.with(mContext)
-                .setDefaultRequestOptions(options)
+                .setDefaultRequestOptions(requestOptions)
                 .load(iconResource)
                 .into(((ViewHolder)viewHolder).category_icon);
 
@@ -71,17 +74,18 @@ public class HomeRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
 
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
         private TextView category;
         private ImageView category_icon;
         private IHomeSelector iHomeSelector;
 
-        public ViewHolder(@NonNull View itemView, IHomeSelector homeSelector) {
+
+        public ViewHolder(@NonNull View itemView, IHomeSelector iHomeSelector) {
             super(itemView);
             category = itemView.findViewById(R.id.category_title);
             category_icon = itemView.findViewById(R.id.category_icon);
-            iHomeSelector = homeSelector;
+            this.iHomeSelector = iHomeSelector;
 
             itemView.setOnClickListener(this);
         }
@@ -93,7 +97,27 @@ public class HomeRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     }
 
     public interface IHomeSelector{
-        void onCategorySelected(int position);
+        void onCategorySelected(int postion);
     }
-
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

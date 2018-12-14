@@ -23,4 +23,5 @@
         android:layout_marginStart="19sp"
         android:layout_toRightOf="@+id/image"/>
 
+
 </RelativeLayout>

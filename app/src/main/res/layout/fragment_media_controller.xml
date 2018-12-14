@@ -7,16 +7,15 @@
     >
 
     <com.codingwithmitch.audiostreamer.MediaSeekBar
-        android:id="@+id/seekbar_audio"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/black_border_top" />
+        android:background="@drawable/black_border_top"
+        android:id="@+id/seekbar_audio"/>
 
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="@dimen/mediaControllerSize"
-        android:orientation="horizontal"
         android:id="@+id/media_controller"
         android:background="@color/colorPrimary"
         android:paddingTop="1dp">
