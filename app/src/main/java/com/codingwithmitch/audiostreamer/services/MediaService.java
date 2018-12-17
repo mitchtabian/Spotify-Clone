@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.codingwithmitch.audiostreamer.util.Constants.MEDIA_QUEUE_POSITION;
+import static com.codingwithmitch.audiostreamer.util.Constants.QUEUE_NEW_PLAYLIST;
 
 public class MediaService extends MediaBrowserServiceCompat {
 
@@ -101,9 +102,18 @@ public class MediaService extends MediaBrowserServiceCompat {
         private int mQueueIndex = -1;
         private MediaMetadataCompat mPreparedMedia;
 
+        private void resetPlaylist(){
+            mPlaylist.clear();
+            mQueueIndex = -1;
+        }
+
         @Override
         public void onPlayFromMediaId(String mediaId, Bundle extras) {
             Log.d(TAG, "onPlayFromMediaId: CALLED.");
+            if(extras.getBoolean(QUEUE_NEW_PLAYLIST, false)){
+                resetPlaylist();
+            }
+
             mPreparedMedia = mMyApplication.getTreeMap().get(mediaId);
             mSession.setMetadata(mPreparedMedia);
             if (!mSession.isActive()) {

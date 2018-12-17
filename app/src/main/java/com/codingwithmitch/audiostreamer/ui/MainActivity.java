@@ -21,6 +21,7 @@ import com.codingwithmitch.audiostreamer.util.MainActivityFragmentManager;
 import java.util.ArrayList;
 
 import static com.codingwithmitch.audiostreamer.util.Constants.MEDIA_QUEUE_POSITION;
+import static com.codingwithmitch.audiostreamer.util.Constants.QUEUE_NEW_PLAYLIST;
 
 
 public class MainActivity extends AppCompatActivity implements IMainActivity
@@ -57,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
 
             Bundle bundle = new Bundle();
             bundle.putInt(MEDIA_QUEUE_POSITION, queuePosition);
+            bundle.putBoolean(QUEUE_NEW_PLAYLIST, true); // let the player know this is a new playlist
             mMediaBrowserHelper.subscribeToNewPlaylist(playlistId);
             mMediaBrowserHelper.getTransportControls().playFromMediaId(mediaItem.getDescription().getMediaId(), bundle);
 
