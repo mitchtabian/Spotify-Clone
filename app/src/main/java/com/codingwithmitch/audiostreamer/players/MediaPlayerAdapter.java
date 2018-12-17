@@ -26,7 +26,7 @@ public class MediaPlayerAdapter extends PlayerAdapter {
 
     private final Context mContext;
     private MediaMetadataCompat mCurrentMedia;
-    private Boolean mCurrentMediaPlayedToCompletion;
+    private boolean mCurrentMediaPlayedToCompletion;
 
 
     // ExoPlayer objects
