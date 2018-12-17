@@ -10,7 +10,9 @@ import android.view.View;
 import android.widget.ProgressBar;
 
 import com.codingwithmitch.audiostreamer.R;
+import com.codingwithmitch.audiostreamer.client.MediaBrowserHelper;
 import com.codingwithmitch.audiostreamer.models.Artist;
+import com.codingwithmitch.audiostreamer.services.MediaService;
 import com.codingwithmitch.audiostreamer.util.MainActivityFragmentManager;
 
 import java.util.ArrayList;
@@ -25,6 +27,7 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
     private ProgressBar mProgressBar;
 
     // Vars
+    private MediaBrowserHelper mMediaBrowserHelper;
 
 
     @Override
@@ -33,9 +36,24 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
         setContentView(R.layout.activity_main);
         mProgressBar = findViewById(R.id.progress_bar);
 
+        mMediaBrowserHelper = new MediaBrowserHelper(this, MediaService.class);
+
         if(savedInstanceState == null){
             loadFragment(HomeFragment.newInstance(), true);
         }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        mMediaBrowserHelper.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mMediaBrowserHelper.onStop();
     }
 
     private void loadFragment(Fragment fragment, boolean lateralMovement){

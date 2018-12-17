@@ -67,8 +67,10 @@ public class MediaService extends MediaBrowserServiceCompat {
     @Override
     public BrowserRoot onGetRoot(@NonNull String s, int i, @Nullable Bundle bundle) {
 
+        Log.d(TAG, "onGetRoot: called. ");
         if(s.equals(getApplicationContext().getPackageName())){
             // Allowed to browse media
+
         }
         return new BrowserRoot("empty_media", null); // return no media
     }

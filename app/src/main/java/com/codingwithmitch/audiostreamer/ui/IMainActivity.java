@@ -13,4 +13,5 @@ public interface IMainActivity {
     void onArtistSelected(String category, Artist artist);
 
     void setActionBarTitle(String title);
+
 }
