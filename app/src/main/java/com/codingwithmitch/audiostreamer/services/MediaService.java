@@ -26,13 +26,13 @@ public class MediaService extends MediaBrowserServiceCompat {
 
     private MediaSessionCompat mSession;
     private MediaPlayerAdapter mPlayback;
-    private MediaLibrary mMediaLibrary;
+    private MyApplication mMyApplication;
 
 
     @Override
     public void onCreate() {
         super.onCreate();
-        mMediaLibrary = new MediaLibrary();
+        mMyApplication = MyApplication.getInstance();
 
         //Build the MediaSession
         mSession = new MediaSessionCompat(this, TAG);
@@ -75,7 +75,7 @@ public class MediaService extends MediaBrowserServiceCompat {
         Log.d(TAG, "onGetRoot: called. ");
         if(s.equals(getApplicationContext().getPackageName())){
             // Allowed to browse media
-            return new BrowserRoot("some_fake_playlist", null); // return no media
+            return new BrowserRoot("some_real_playlist", null); // return no media
         }
         return new BrowserRoot("empty_media", null); // return no media
     }
@@ -89,7 +89,7 @@ public class MediaService extends MediaBrowserServiceCompat {
             result.sendResult(null);
             return;
         }
-        result.sendResult(MediaLibrary.getMediaItems()); // return all available media
+        result.sendResult(mMyApplication.getMediaItems()); // return all available media
     }
 
 
@@ -102,7 +102,12 @@ public class MediaService extends MediaBrowserServiceCompat {
         @Override
         public void onPlayFromMediaId(String mediaId, Bundle extras) {
             Log.d(TAG, "onPlayFromMediaId: CALLED.");
-
+            mPreparedMedia = mMyApplication.getTreeMap().get(mediaId);
+            mSession.setMetadata(mPreparedMedia);
+            if (!mSession.isActive()) {
+                mSession.setActive(true);
+            }
+            mPlayback.playFromMedia(mPreparedMedia);
         }
 
         @Override
@@ -127,9 +132,8 @@ public class MediaService extends MediaBrowserServiceCompat {
                 return;
             }
 
-//            mPreparedMedia = null; // TODO: Need to retrieve the selected media here
             String mediaId = mPlaylist.get(mQueueIndex).getDescription().getMediaId();
-            mPreparedMedia = mMediaLibrary.getTreeMap().get(mediaId);
+            mPreparedMedia = mMyApplication.getTreeMap().get(mediaId);
             mSession.setMetadata(mPreparedMedia);
 
             if (!mSession.isActive()) {

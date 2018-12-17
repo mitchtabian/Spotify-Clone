@@ -1,5 +1,7 @@
 package com.codingwithmitch.audiostreamer.ui;
 
+import android.support.v4.media.MediaMetadataCompat;
+
 import com.codingwithmitch.audiostreamer.MyApplication;
 import com.codingwithmitch.audiostreamer.models.Artist;
 
@@ -18,4 +20,6 @@ public interface IMainActivity {
     void playPause();
 
     MyApplication getMyApplicationInstance();
+
+    void onMediaSelected(MediaMetadataCompat mediaItem);
 }

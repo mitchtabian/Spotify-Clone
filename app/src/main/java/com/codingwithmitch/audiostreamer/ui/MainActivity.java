@@ -3,11 +3,13 @@ package com.codingwithmitch.audiostreamer.ui;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.media.MediaMetadataCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.codingwithmitch.audiostreamer.MyApplication;
 import com.codingwithmitch.audiostreamer.R;
@@ -46,7 +48,18 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
         }
     }
 
+    @Override
+    public void onMediaSelected(MediaMetadataCompat mediaItem) {
+        if(mediaItem != null){
+            Log.d(TAG, "onMediaSelected: CALLED: " + mediaItem.getDescription().getMediaId());
 
+            mMediaBrowserHelper.getTransportControls().playFromMediaId(mediaItem.getDescription().getMediaId(), null);
+
+        }
+        else{
+            Toast.makeText(this, "select something to play", Toast.LENGTH_SHORT).show();
+        }
+    }
 
     @Override
     public MyApplication getMyApplicationInstance() {
