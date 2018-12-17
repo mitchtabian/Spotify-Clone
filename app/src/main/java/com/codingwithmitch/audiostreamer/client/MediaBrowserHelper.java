@@ -99,7 +99,13 @@ public class MediaBrowserHelper {
         }
     }
 
-
+    public MediaControllerCompat.TransportControls getTransportControls() {
+        if (mMediaController == null) {
+            Log.d(TAG, "getTransportControls: MediaController is null!");
+            throw new IllegalStateException("MediaController is null!");
+        }
+        return mMediaController.getTransportControls();
+    }
 
 }
 

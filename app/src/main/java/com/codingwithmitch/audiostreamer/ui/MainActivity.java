@@ -43,6 +43,20 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
         }
     }
 
+    private boolean mIsPlaying = false;
+    @Override
+    public void playPause() {
+        if(mIsPlaying){
+           // Skip to next song
+            mMediaBrowserHelper.getTransportControls().skipToNext();
+        }
+        else{
+            // play song
+            mMediaBrowserHelper.getTransportControls().play();
+            mIsPlaying = true;
+        }
+    }
+
     @Override
     public void onStart() {
         super.onStart();

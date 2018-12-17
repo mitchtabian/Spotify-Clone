@@ -14,6 +14,7 @@ import android.util.Log;
 
 
 import com.codingwithmitch.audiostreamer.players.MediaPlayerAdapter;
+import com.codingwithmitch.audiostreamer.util.MediaLibrary;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,10 +25,12 @@ public class MediaService extends MediaBrowserServiceCompat {
 
     private MediaSessionCompat mSession;
     private MediaPlayerAdapter mPlayback;
+    private MediaLibrary mMediaLibrary;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        mMediaLibrary = new MediaLibrary();
 
         //Build the MediaSession
         mSession = new MediaSessionCompat(this, TAG);
@@ -70,7 +73,7 @@ public class MediaService extends MediaBrowserServiceCompat {
         Log.d(TAG, "onGetRoot: called. ");
         if(s.equals(getApplicationContext().getPackageName())){
             // Allowed to browse media
-
+            return new BrowserRoot("some_fake_playlist", null); // return no media
         }
         return new BrowserRoot("empty_media", null); // return no media
     }
@@ -84,7 +87,7 @@ public class MediaService extends MediaBrowserServiceCompat {
             result.sendResult(null);
             return;
         }
-        result.sendResult(null); // return all available media
+        result.sendResult(MediaLibrary.getMediaItems()); // return all available media
     }
 
 
@@ -122,7 +125,9 @@ public class MediaService extends MediaBrowserServiceCompat {
                 return;
             }
 
-            mPreparedMedia = null; // TODO: Need to retrieve the selected media here
+//            mPreparedMedia = null; // TODO: Need to retrieve the selected media here
+            String mediaId = mPlaylist.get(mQueueIndex).getDescription().getMediaId();
+            mPreparedMedia = mMediaLibrary.getTreeMap().get(mediaId);
             mSession.setMetadata(mPreparedMedia);
 
             if (!mSession.isActive()) {

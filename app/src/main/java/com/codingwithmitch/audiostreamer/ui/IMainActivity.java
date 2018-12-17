@@ -14,4 +14,5 @@ public interface IMainActivity {
 
     void setActionBarTitle(String title);
 
+    void playPause();
 }
