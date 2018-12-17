@@ -20,6 +20,8 @@ import com.codingwithmitch.audiostreamer.util.MainActivityFragmentManager;
 
 import java.util.ArrayList;
 
+import static com.codingwithmitch.audiostreamer.util.Constants.MEDIA_QUEUE_POSITION;
+
 
 public class MainActivity extends AppCompatActivity implements IMainActivity
 {
@@ -49,12 +51,14 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
     }
 
     @Override
-    public void onMediaSelected(String playlistId, MediaMetadataCompat mediaItem) {
+    public void onMediaSelected(String playlistId, MediaMetadataCompat mediaItem, int queuePosition) {
         if(mediaItem != null){
             Log.d(TAG, "onMediaSelected: CALLED: " + mediaItem.getDescription().getMediaId());
 
+            Bundle bundle = new Bundle();
+            bundle.putInt(MEDIA_QUEUE_POSITION, queuePosition);
             mMediaBrowserHelper.subscribeToNewPlaylist(playlistId);
-            mMediaBrowserHelper.getTransportControls().playFromMediaId(mediaItem.getDescription().getMediaId(), null);
+            mMediaBrowserHelper.getTransportControls().playFromMediaId(mediaItem.getDescription().getMediaId(), bundle);
 
         }
         else{

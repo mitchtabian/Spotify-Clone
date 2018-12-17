@@ -156,7 +156,8 @@ public class PlaylistFragment extends Fragment implements
         mAdapter.setSelectedIndex(position);
         mIMainActivity.onMediaSelected(
                 mSelectArtist.getArtist_id(), // playlist_id = artist_id
-                mMediaList.get(position));
+                mMediaList.get(position),
+                position);
     }
 }
 
