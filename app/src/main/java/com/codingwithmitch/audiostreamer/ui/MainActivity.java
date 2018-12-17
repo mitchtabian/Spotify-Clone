@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 
+import com.codingwithmitch.audiostreamer.MyApplication;
 import com.codingwithmitch.audiostreamer.R;
 import com.codingwithmitch.audiostreamer.client.MediaBrowserHelper;
 import com.codingwithmitch.audiostreamer.models.Artist;
@@ -28,6 +29,7 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
 
     // Vars
     private MediaBrowserHelper mMediaBrowserHelper;
+    private MyApplication mMyApplication;
 
 
     @Override
@@ -36,11 +38,19 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
         setContentView(R.layout.activity_main);
         mProgressBar = findViewById(R.id.progress_bar);
 
+        mMyApplication = MyApplication.getInstance();
         mMediaBrowserHelper = new MediaBrowserHelper(this, MediaService.class);
 
         if(savedInstanceState == null){
             loadFragment(HomeFragment.newInstance(), true);
         }
+    }
+
+
+
+    @Override
+    public MyApplication getMyApplicationInstance() {
+        return mMyApplication;
     }
 
     private boolean mIsPlaying = false;

@@ -151,7 +151,9 @@ public class PlaylistFragment extends Fragment implements
 
     @Override
     public void onMediaSelected(int position) {
-
+        mIMainActivity.getMyApplicationInstance().setMediaItems(mMediaList);
+        mSelectedMedia = mMediaList.get(position);
+        mAdapter.setSelectedIndex(position);
     }
 }
 

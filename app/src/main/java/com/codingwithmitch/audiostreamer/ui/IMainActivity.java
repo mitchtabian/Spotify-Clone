@@ -1,5 +1,6 @@
 package com.codingwithmitch.audiostreamer.ui;
 
+import com.codingwithmitch.audiostreamer.MyApplication;
 import com.codingwithmitch.audiostreamer.models.Artist;
 
 public interface IMainActivity {
@@ -15,4 +16,6 @@ public interface IMainActivity {
     void setActionBarTitle(String title);
 
     void playPause();
+
+    MyApplication getMyApplicationInstance();
 }

@@ -13,6 +13,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 
+import com.codingwithmitch.audiostreamer.MyApplication;
 import com.codingwithmitch.audiostreamer.players.MediaPlayerAdapter;
 import com.codingwithmitch.audiostreamer.util.MediaLibrary;
 
@@ -26,6 +27,7 @@ public class MediaService extends MediaBrowserServiceCompat {
     private MediaSessionCompat mSession;
     private MediaPlayerAdapter mPlayback;
     private MediaLibrary mMediaLibrary;
+
 
     @Override
     public void onCreate() {
