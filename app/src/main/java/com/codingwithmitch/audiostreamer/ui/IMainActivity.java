@@ -4,6 +4,7 @@ import android.support.v4.media.MediaMetadataCompat;
 
 import com.codingwithmitch.audiostreamer.MyApplication;
 import com.codingwithmitch.audiostreamer.models.Artist;
+import com.codingwithmitch.audiostreamer.util.MyPreferenceManager;
 
 public interface IMainActivity {
 
@@ -22,4 +23,6 @@ public interface IMainActivity {
     MyApplication getMyApplicationInstance();
 
     void onMediaSelected(String playlistId, MediaMetadataCompat mediaItem, int position);
+
+    MyPreferenceManager getMyPreferenceManager();
 }

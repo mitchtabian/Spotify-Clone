@@ -17,6 +17,7 @@ import com.codingwithmitch.audiostreamer.client.MediaBrowserHelper;
 import com.codingwithmitch.audiostreamer.models.Artist;
 import com.codingwithmitch.audiostreamer.services.MediaService;
 import com.codingwithmitch.audiostreamer.util.MainActivityFragmentManager;
+import com.codingwithmitch.audiostreamer.util.MyPreferenceManager;
 
 import java.util.ArrayList;
 
@@ -44,6 +45,7 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
         mProgressBar = findViewById(R.id.progress_bar);
 
         mMyApplication = MyApplication.getInstance();
+
         mMediaBrowserHelper = new MediaBrowserHelper(this, MediaService.class);
 
         if(savedInstanceState == null){
@@ -56,16 +58,28 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
         if(mediaItem != null){
             Log.d(TAG, "onMediaSelected: CALLED: " + mediaItem.getDescription().getMediaId());
 
+            String currentPlaylistId = getMyPreferenceManager().getPlaylistId();
+
             Bundle bundle = new Bundle();
             bundle.putInt(MEDIA_QUEUE_POSITION, queuePosition);
-            bundle.putBoolean(QUEUE_NEW_PLAYLIST, true); // let the player know this is a new playlist
-            mMediaBrowserHelper.subscribeToNewPlaylist(playlistId);
-            mMediaBrowserHelper.getTransportControls().playFromMediaId(mediaItem.getDescription().getMediaId(), bundle);
+            if(playlistId.equals(currentPlaylistId)){
+                mMediaBrowserHelper.getTransportControls().playFromMediaId(mediaItem.getDescription().getMediaId(), bundle);
+            }
+            else{
+                bundle.putBoolean(QUEUE_NEW_PLAYLIST, true); // let the player know this is a new playlist
+                mMediaBrowserHelper.subscribeToNewPlaylist(currentPlaylistId, playlistId);
+                mMediaBrowserHelper.getTransportControls().playFromMediaId(mediaItem.getDescription().getMediaId(), bundle);
+            }
 
         }
         else{
             Toast.makeText(this, "select something to play", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    @Override
+    public MyPreferenceManager getMyPreferenceManager() {
+        return mMyApplication.getMyPreferenceManager();
     }
 
     @Override

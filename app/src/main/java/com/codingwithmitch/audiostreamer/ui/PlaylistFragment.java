@@ -158,6 +158,13 @@ public class PlaylistFragment extends Fragment implements
                 mSelectArtist.getArtist_id(), // playlist_id = artist_id
                 mMediaList.get(position),
                 position);
+        saveLastPlayedSongProperties();
+    }
+
+    private void saveLastPlayedSongProperties(){
+        // Save some properties for next time the app opens
+        // NOTE: Normally you'd do this with a cache
+        mIMainActivity.getMyPreferenceManager().savePlaylistId(mSelectArtist.getArtist_id()); // playlist id is same as artist id
     }
 }
 
