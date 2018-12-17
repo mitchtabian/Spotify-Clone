@@ -33,6 +33,10 @@ public class MediaBrowserHelper {
         mMediaBrowserSubscriptionCallback = new MediaBrowserSubscriptionCallback();
     }
 
+    public void subscribeToNewPlaylist(String newPlatlistId){
+        mMediaBrowser.subscribe(newPlatlistId, mMediaBrowserSubscriptionCallback);
+    }
+
     public void onStart() {
         if (mMediaBrowser == null) {
 

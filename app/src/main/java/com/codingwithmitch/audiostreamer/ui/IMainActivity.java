@@ -21,5 +21,5 @@ public interface IMainActivity {
 
     MyApplication getMyApplicationInstance();
 
-    void onMediaSelected(MediaMetadataCompat mediaItem);
+    void onMediaSelected(String playlistId, MediaMetadataCompat mediaItem);
 }
