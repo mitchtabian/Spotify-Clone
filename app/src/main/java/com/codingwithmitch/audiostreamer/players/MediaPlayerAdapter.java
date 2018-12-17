@@ -33,7 +33,7 @@ public class MediaPlayerAdapter extends PlayerAdapter {
 
     private final Context mContext;
     private MediaMetadataCompat mCurrentMedia;
-    private Boolean mCurrentMediaPlayedToCompletion;
+    private boolean mCurrentMediaPlayedToCompletion;
     private int mState;
     private long mStartTime;
 
