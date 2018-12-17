@@ -103,6 +103,12 @@ public class MediaPlayerAdapter extends PlayerAdapter {
     private void playFile(MediaMetadataCompat metaData) {
         String mediaId = metaData.getDescription().getMediaId();
         boolean mediaChanged = (mCurrentMedia == null || !mediaId.equals(mCurrentMedia.getDescription().getMediaId()));
+		if (mCurrentMediaPlayedToCompletion) {
+            // Last audio file was played to completion, the resourceId hasn't changed, but the
+            // player was released, so force a reload of the media file for playback.
+            mediaChanged = true;
+            mCurrentMediaPlayedToCompletion = false;
+        }
         if (!mediaChanged) {
             if (!isPlaying()) {
                 play();
