@@ -3,10 +3,13 @@ package com.codingwithmitch.audiostreamer.util;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 import static com.codingwithmitch.audiostreamer.util.Constants.PLAYLIST_ID;
 
 public class MyPreferenceManager {
+
+    private static final String TAG = "MyPreferenceManager";
 
     private SharedPreferences mPreferences;
 

@@ -36,6 +36,7 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
     // Vars
     private MediaBrowserHelper mMediaBrowserHelper;
     private MyApplication mMyApplication;
+    private MyPreferenceManager mMyPrefManager;
 
 
     @Override
@@ -45,6 +46,7 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
         mProgressBar = findViewById(R.id.progress_bar);
 
         mMyApplication = MyApplication.getInstance();
+        mMyPrefManager = new MyPreferenceManager(this);
 
         mMediaBrowserHelper = new MediaBrowserHelper(this, MediaService.class);
 
@@ -52,6 +54,7 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
             loadFragment(HomeFragment.newInstance(), true);
         }
     }
+
 
     @Override
     public void onMediaSelected(String playlistId, MediaMetadataCompat mediaItem, int queuePosition) {
@@ -79,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
 
     @Override
     public MyPreferenceManager getMyPreferenceManager() {
-        return mMyApplication.getMyPreferenceManager();
+        return mMyPrefManager;
     }
 
     @Override

@@ -18,23 +18,12 @@ public class MyApplication extends Application {
     private static MyApplication mInstance;
     private List<MediaBrowserCompat.MediaItem> mMediaItems = new ArrayList<>();
     private TreeMap<String, MediaMetadataCompat> mTreeMap = new TreeMap<>();
-    private MyPreferenceManager mPreferenceManager;
 
     public static MyApplication getInstance(){
         if(mInstance == null){
             mInstance = new MyApplication();
         }
         return mInstance;
-    }
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        mPreferenceManager = new MyPreferenceManager(this);
-    }
-
-    public MyPreferenceManager getMyPreferenceManager(){
-        return mPreferenceManager;
     }
 
     public List<MediaBrowserCompat.MediaItem> getMediaItems(){
