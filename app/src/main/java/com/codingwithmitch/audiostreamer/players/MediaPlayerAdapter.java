@@ -2,6 +2,7 @@ package com.codingwithmitch.audiostreamer.players;
 
 import android.content.Context;
 import android.net.Uri;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
@@ -36,6 +37,7 @@ public class MediaPlayerAdapter extends PlayerAdapter {
     private boolean mCurrentMediaPlayedToCompletion;
     private int mState;
     private long mStartTime;
+    private PlaybackInfoListener mPlaybackInfoListener;
 
 
     // ExoPlayer objects
@@ -46,11 +48,12 @@ public class MediaPlayerAdapter extends PlayerAdapter {
     private ExoPlayerEventListener mExoPlayerEventListener;
 
 
-    public MediaPlayerAdapter(Context context) {
+    public MediaPlayerAdapter(Context context, PlaybackInfoListener playbackInfoListener) {
         super(context);
         mContext = context.getApplicationContext();
-
+        mPlaybackInfoListener = playbackInfoListener;
     }
+
 
     private void initializeExoPlayer(){
         if (mExoPlayer == null) {
@@ -189,6 +192,18 @@ public class MediaPlayerAdapter extends PlayerAdapter {
         final long reportPosition = mExoPlayer == null ? 0 : mExoPlayer.getCurrentPosition();
 
         // Send playback state information to service
+        publishStateBuilder(reportPosition);
+    }
+
+
+    private void publishStateBuilder(long reportPosition){
+        final PlaybackStateCompat.Builder stateBuilder = new PlaybackStateCompat.Builder();
+        stateBuilder.setActions(getAvailableActions());
+        stateBuilder.setState(mState,
+                reportPosition,
+                1.0f,
+                SystemClock.elapsedRealtime());
+        mPlaybackInfoListener.onPlaybackStateChange(stateBuilder.build());
     }
 
     /**

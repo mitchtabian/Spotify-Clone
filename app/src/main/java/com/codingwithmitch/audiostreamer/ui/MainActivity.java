@@ -4,6 +4,8 @@ package com.codingwithmitch.audiostreamer.ui;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.media.MediaMetadataCompat;
+import android.support.v4.media.session.MediaControllerCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,6 +16,7 @@ import android.widget.Toast;
 import com.codingwithmitch.audiostreamer.MyApplication;
 import com.codingwithmitch.audiostreamer.R;
 import com.codingwithmitch.audiostreamer.client.MediaBrowserHelper;
+import com.codingwithmitch.audiostreamer.client.MediaBrowserHelperCallback;
 import com.codingwithmitch.audiostreamer.models.Artist;
 import com.codingwithmitch.audiostreamer.services.MediaService;
 import com.codingwithmitch.audiostreamer.util.MainActivityFragmentManager;
@@ -25,7 +28,9 @@ import static com.codingwithmitch.audiostreamer.util.Constants.MEDIA_QUEUE_POSIT
 import static com.codingwithmitch.audiostreamer.util.Constants.QUEUE_NEW_PLAYLIST;
 
 
-public class MainActivity extends AppCompatActivity implements IMainActivity
+public class MainActivity extends AppCompatActivity implements
+        IMainActivity,
+        MediaBrowserHelperCallback
 {
 
     private static final String TAG = "MainActivity";
@@ -37,6 +42,7 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
     private MediaBrowserHelper mMediaBrowserHelper;
     private MyApplication mMyApplication;
     private MyPreferenceManager mMyPrefManager;
+    private boolean mIsPlaying;
 
 
     @Override
@@ -49,11 +55,29 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
         mMyPrefManager = new MyPreferenceManager(this);
 
         mMediaBrowserHelper = new MediaBrowserHelper(this, MediaService.class);
+        mMediaBrowserHelper.setMediaBrowserHelperCallback(this);
 
         if(savedInstanceState == null){
             loadFragment(HomeFragment.newInstance(), true);
         }
     }
+
+    @Override
+    public void onMetadataChanged(MediaMetadataCompat metadata) {
+        Log.d(TAG, "onMetadataChanged: called");
+
+        // Do stuff with new Metadata
+    }
+
+    @Override
+    public void onPlaybackStateChanged(PlaybackStateCompat state) {
+        Log.d(TAG, "onPlaybackStateChanged: called.");
+        mIsPlaying = state != null &&
+                state.getState() == PlaybackStateCompat.STATE_PLAYING;
+
+        // update UI
+    }
+
 
 
     @Override
@@ -90,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
         return mMyApplication;
     }
 
-    private boolean mIsPlaying = false;
+
     @Override
     public void playPause() {
         if(mIsPlaying){

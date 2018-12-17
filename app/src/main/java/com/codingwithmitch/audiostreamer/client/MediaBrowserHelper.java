@@ -5,9 +5,12 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaBrowserServiceCompat;
+import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
 
 import java.util.List;
@@ -24,6 +27,9 @@ public class MediaBrowserHelper {
 
     private MediaBrowserConnectionCallback mMediaBrowserConnectionCallback;
     private final MediaBrowserSubscriptionCallback mMediaBrowserSubscriptionCallback;
+    private MediaControllerCallback mMediaControllerCallback;
+    private MediaBrowserHelperCallback mMediaBrowserCallback;
+
 
     public MediaBrowserHelper(Context context, Class<? extends MediaBrowserServiceCompat> serviceClass) {
         mContext = context;
@@ -31,6 +37,39 @@ public class MediaBrowserHelper {
 
         mMediaBrowserConnectionCallback = new MediaBrowserConnectionCallback();
         mMediaBrowserSubscriptionCallback = new MediaBrowserSubscriptionCallback();
+        mMediaControllerCallback = new MediaControllerCallback();
+    }
+
+    public void setMediaBrowserHelperCallback(MediaBrowserHelperCallback callback){
+        mMediaBrowserCallback = callback;
+    }
+
+    // Receives callbacks from the MediaController and updates the UI state,
+    // i.e.: Which is the current item, whether it's playing or paused, etc.
+    private class MediaControllerCallback extends MediaControllerCompat.Callback {
+
+        @Override
+        public void onMetadataChanged(final MediaMetadataCompat metadata) {
+            Log.d(TAG, "onMetadataChanged: CALLED");
+            if(mMediaBrowserCallback != null){
+                mMediaBrowserCallback.onMetadataChanged(metadata);
+            }
+        }
+
+        @Override
+        public void onPlaybackStateChanged(@Nullable final PlaybackStateCompat state) {
+            Log.d(TAG, "onPlaybackStateChanged: CALLED");
+            if(mMediaBrowserCallback != null){
+                mMediaBrowserCallback.onPlaybackStateChanged(state);
+            }
+        }
+
+        // This might happen if the MusicService is killed while the Activity is in the
+        // foreground and onStart() has been called (but not onStop()).
+        @Override
+        public void onSessionDestroyed() {
+            onPlaybackStateChanged(null);
+        }
     }
 
     public void subscribeToNewPlaylist(String currentPlaylistId, String newPlatlistId){
@@ -56,6 +95,7 @@ public class MediaBrowserHelper {
 
     public void onStop() {
         if (mMediaController != null) {
+            mMediaController.unregisterCallback(mMediaControllerCallback);
             mMediaController = null;
         }
         if (mMediaBrowser != null && mMediaBrowser.isConnected()) {
@@ -77,6 +117,8 @@ public class MediaBrowserHelper {
                 // Get a MediaController for the MediaSession.
                 mMediaController =
                         new MediaControllerCompat(mContext, mMediaBrowser.getSessionToken());
+                mMediaController.registerCallback(mMediaControllerCallback);
+
 
             } catch (RemoteException e) {
                 Log.d(TAG, String.format("onConnected: Problem: %s", e.toString()));

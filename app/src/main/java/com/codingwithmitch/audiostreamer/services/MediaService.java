@@ -9,12 +9,14 @@ import android.support.v4.media.MediaBrowserServiceCompat;
 import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
 import android.util.Log;
 
 
 import com.codingwithmitch.audiostreamer.MyApplication;
 import com.codingwithmitch.audiostreamer.players.MediaPlayerAdapter;
+import com.codingwithmitch.audiostreamer.players.PlaybackInfoListener;
 import com.codingwithmitch.audiostreamer.util.MediaLibrary;
 
 import java.util.ArrayList;
@@ -53,7 +55,7 @@ public class MediaService extends MediaBrowserServiceCompat {
         // A token that can be used to create a MediaController for this session
         setSessionToken(mSession.getSessionToken());
 
-        mPlayback = new MediaPlayerAdapter(this);
+        mPlayback = new MediaPlayerAdapter(this, new MediaPlayerListener());
     }
 
     @Override
@@ -213,6 +215,18 @@ public class MediaService extends MediaBrowserServiceCompat {
         private boolean isReadyToPlay() {
             return (!mPlaylist.isEmpty());
         }
+    }
+
+
+    public class MediaPlayerListener implements PlaybackInfoListener {
+
+        @Override
+        public void onPlaybackStateChange(PlaybackStateCompat state) {
+            // Report the state to the MediaSession.
+            mSession.setPlaybackState(state);
+
+        }
+
     }
 }
 
