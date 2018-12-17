@@ -65,8 +65,12 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onMetadataChanged(MediaMetadataCompat metadata) {
         Log.d(TAG, "onMetadataChanged: called");
+        if(metadata == null){
+            return;
+        }
 
         // Do stuff with new Metadata
+        getMediaControllerFragment().setMediaTitle(metadata);
     }
 
     @Override
@@ -76,9 +80,20 @@ public class MainActivity extends AppCompatActivity implements
                 state.getState() == PlaybackStateCompat.STATE_PLAYING;
 
         // update UI
+        if(getMediaControllerFragment() != null){
+            getMediaControllerFragment().setIsPlaying(mIsPlaying);
+        }
     }
 
 
+    private MediaControllerFragment getMediaControllerFragment(){
+        MediaControllerFragment mediaControllerFragment = (MediaControllerFragment)getSupportFragmentManager()
+                .findFragmentById(R.id.bottom_media_controller);
+        if(mediaControllerFragment != null){
+            return mediaControllerFragment;
+        }
+        return null;
+    }
 
     @Override
     public void onMediaSelected(String playlistId, MediaMetadataCompat mediaItem, int queuePosition) {
@@ -117,14 +132,11 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void playPause() {
-        if(mIsPlaying){
-           // Skip to next song
-            mMediaBrowserHelper.getTransportControls().skipToNext();
+        if (mIsPlaying) {
+            mMediaBrowserHelper.getTransportControls().pause();
         }
-        else{
-            // play song
+        else {
             mMediaBrowserHelper.getTransportControls().play();
-            mIsPlaying = true;
         }
     }
 
