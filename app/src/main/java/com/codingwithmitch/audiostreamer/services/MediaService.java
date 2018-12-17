@@ -13,6 +13,9 @@ import android.text.TextUtils;
 import android.util.Log;
 
 
+import com.codingwithmitch.audiostreamer.players.MediaPlayerAdapter;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class MediaService extends MediaBrowserServiceCompat {
@@ -20,6 +23,7 @@ public class MediaService extends MediaBrowserServiceCompat {
     private static final String TAG = "MediaService";
 
     private MediaSessionCompat mSession;
+    private MediaPlayerAdapter mPlayback;
 
     @Override
     public void onCreate() {
@@ -40,12 +44,15 @@ public class MediaService extends MediaBrowserServiceCompat {
 
         // A token that can be used to create a MediaController for this session
         setSessionToken(mSession.getSessionToken());
+
+        mPlayback = new MediaPlayerAdapter(this);
     }
 
     @Override
     public void onTaskRemoved(Intent rootIntent) {
         Log.d(TAG, "onTaskRemoved: stopped");
         super.onTaskRemoved(rootIntent);
+        mPlayback.stop();
         stopSelf();
     }
 
@@ -79,56 +86,99 @@ public class MediaService extends MediaBrowserServiceCompat {
     }
 
 
-    public class MediaSessionCallback extends MediaSessionCompat.Callback{
+    public class MediaSessionCallback extends MediaSessionCompat.Callback {
 
-        @Override
-        public void onPrepare() {
-            super.onPrepare();
-        }
+        private final List<MediaSessionCompat.QueueItem> mPlaylist = new ArrayList<>();
+        private int mQueueIndex = -1;
+        private MediaMetadataCompat mPreparedMedia;
 
         @Override
         public void onPlayFromMediaId(String mediaId, Bundle extras) {
-            super.onPrepareFromMediaId(mediaId, extras);
-        }
+            Log.d(TAG, "onPlayFromMediaId: CALLED.");
 
-        @Override
-        public void onPlay() {
-            super.onPlay();
-        }
-
-        @Override
-        public void onPause() {
-            super.onPause();
-        }
-
-        @Override
-        public void onSkipToNext() {
-            super.onSkipToNext();
-        }
-
-        @Override
-        public void onSkipToPrevious() {
-            super.onSkipToPrevious();
-        }
-
-        @Override
-        public void onStop() {
-            super.onStop();
-        }
-
-        @Override
-        public void onSeekTo(long pos) {
-            super.onSeekTo(pos);
         }
 
         @Override
         public void onAddQueueItem(MediaDescriptionCompat description) {
-            super.onAddQueueItem(description);
+            Log.d(TAG, "onAddQueueItem: CALLED: position in list: " + mPlaylist.size());
+            mPlaylist.add(new MediaSessionCompat.QueueItem(description, description.hashCode()));
+            mQueueIndex = (mQueueIndex == -1) ? 0 : mQueueIndex;
+            mSession.setQueue(mPlaylist);
         }
 
         @Override
         public void onRemoveQueueItem(MediaDescriptionCompat description) {
-            super.onRemoveQueueItem(description);
+            mPlaylist.remove(new MediaSessionCompat.QueueItem(description, description.hashCode()));
+            mQueueIndex = (mPlaylist.isEmpty()) ? -1 : mQueueIndex;
+            mSession.setQueue(mPlaylist);
+        }
+
+        @Override
+        public void onPrepare() {
+            if (mQueueIndex < 0 && mPlaylist.isEmpty()) {
+                // Nothing to play.
+                return;
+            }
+
+            mPreparedMedia = null; // TODO: Need to retrieve the selected media here
+            mSession.setMetadata(mPreparedMedia);
+
+            if (!mSession.isActive()) {
+                mSession.setActive(true);
+            }
+        }
+
+        @Override
+        public void onPlay() {
+
+            if (!isReadyToPlay()) {
+                // Nothing to play.
+                return;
+            }
+
+            if (mPreparedMedia == null) {
+                onPrepare();
+            }
+
+            mPlayback.playFromMedia(mPreparedMedia);
+
+        }
+
+        @Override
+        public void onPause() {
+            mPlayback.pause();
+        }
+
+        @Override
+        public void onStop() {
+            mPlayback.stop();
+            mSession.setActive(false);
+        }
+
+        @Override
+        public void onSkipToNext() {
+            Log.d(TAG, "onSkipToNext: SKIP TO NEXT");
+            // increment and then check using modulus
+            mQueueIndex = (++mQueueIndex % mPlaylist.size());
+            mPreparedMedia = null;
+            onPlay();
+        }
+
+        @Override
+        public void onSkipToPrevious() {
+            Log.d(TAG, "onSkipToPrevious: SKIP TO PREVIOUS");
+            mQueueIndex = mQueueIndex > 0 ? mQueueIndex - 1 : mPlaylist.size() - 1;
+            mPreparedMedia = null;
+            onPlay();
+        }
+
+        @Override
+        public void onSeekTo(long pos) {
+            mPlayback.seekTo(pos);
+        }
+
+        private boolean isReadyToPlay() {
+            return (!mPlaylist.isEmpty());
         }
     }
 }
