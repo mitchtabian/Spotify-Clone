@@ -1,13 +1,17 @@
 package com.codingwithmitch.audiostreamer.players;
 
 import android.content.Context;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v4.media.MediaMetadataCompat;
+import android.util.Log;
 
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.upstream.DataSource;
@@ -19,8 +23,10 @@ public class MediaPlayerAdapter extends PlayerAdapter {
 
     private static final String TAG = "MediaPlayerAdapter";
 
-    
+
     private final Context mContext;
+    private MediaMetadataCompat mCurrentMedia;
+    private Boolean mCurrentMediaPlayedToCompletion;
 
 
     // ExoPlayer objects
@@ -65,7 +71,8 @@ public class MediaPlayerAdapter extends PlayerAdapter {
 
     @Override
     public void playFromMedia(MediaMetadataCompat metadata) {
-
+        startTrackingPlayback();
+        playFile(metadata);
     }
 
     @Override
@@ -92,4 +99,51 @@ public class MediaPlayerAdapter extends PlayerAdapter {
     public void setVolume(float volume) {
 
     }
+
+    private void playFile(MediaMetadataCompat metaData) {
+        String mediaId = metaData.getDescription().getMediaId();
+        boolean mediaChanged = (mCurrentMedia == null || !mediaId.equals(mCurrentMedia.getDescription().getMediaId()));
+        if (!mediaChanged) {
+            if (!isPlaying()) {
+                play();
+            }
+            return;
+        }
+        else {
+            release();
+        }
+
+        mCurrentMedia = metaData;
+
+        initializeExoPlayer();
+
+        try {
+            MediaSource audioSource =
+                    new ExtractorMediaSource.Factory(mDataSourceFactory)
+                            .createMediaSource(Uri.parse(metaData.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI)));
+            mExoPlayer.prepare(audioSource);
+            Log.d(TAG, "onPlayerStateChanged: PREPARE");
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to play media uri: "
+                    + metaData.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI), e);
+        }
+
+        play();
+    }
+
+    private void startTrackingPlayback(){
+        // Begin tracking the playback
+    }
+
 }
+
+
+
+
+
+
+
+
+
+
