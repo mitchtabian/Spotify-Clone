@@ -15,6 +15,8 @@ import android.util.Log;
 
 import java.util.List;
 
+import static com.codingwithmitch.audiostreamer.util.Constants.PLAYLIST_IDENTIFIER;
+
 public class MediaBrowserHelper {
 
     private static final String TAG = "MediaBrowserHelper";
@@ -81,7 +83,6 @@ public class MediaBrowserHelper {
 
     public void onStart() {
         if (mMediaBrowser == null) {
-
             mMediaBrowser =
                     new MediaBrowserCompat(
                             mContext,

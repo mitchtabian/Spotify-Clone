@@ -19,6 +19,7 @@ import com.codingwithmitch.audiostreamer.R;
 import com.codingwithmitch.audiostreamer.players.MediaPlayerAdapter;
 import com.codingwithmitch.audiostreamer.players.PlaybackInfoListener;
 import com.codingwithmitch.audiostreamer.util.MediaLibrary;
+import com.codingwithmitch.audiostreamer.util.MyPreferenceManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,12 +36,14 @@ public class MediaService extends MediaBrowserServiceCompat {
     private MediaSessionCompat mSession;
     private MediaPlayerAdapter mPlayback;
     private MyApplication mMyApplication;
+    private MyPreferenceManager mMyPrefManager;
 
 
     @Override
     public void onCreate() {
         super.onCreate();
         mMyApplication = MyApplication.getInstance();
+        mMyPrefManager = new MyPreferenceManager(this);
 
         //Build the MediaSession
         mSession = new MediaSessionCompat(this, TAG);
@@ -82,6 +85,7 @@ public class MediaService extends MediaBrowserServiceCompat {
 
         Log.d(TAG, "onGetRoot: called. ");
         if(s.equals(getApplicationContext().getPackageName())){
+
             // Allowed to browse media
             return new BrowserRoot("some_real_playlist", null); // return no media
         }
@@ -133,6 +137,8 @@ public class MediaService extends MediaBrowserServiceCompat {
             else{
                 mQueueIndex = extras.getInt(MEDIA_QUEUE_POSITION);
             }
+            mMyPrefManager.saveQueuePosition(mQueueIndex);
+            mMyPrefManager.saveLastPlayedMedia(mPreparedMedia.getDescription().getMediaId());
         }
 
         @Override
@@ -179,7 +185,8 @@ public class MediaService extends MediaBrowserServiceCompat {
             }
 
             mPlayback.playFromMedia(mPreparedMedia);
-
+            mMyPrefManager.saveQueuePosition(mQueueIndex);
+            mMyPrefManager.saveLastPlayedMedia(mPreparedMedia.getDescription().getMediaId());
         }
 
         @Override

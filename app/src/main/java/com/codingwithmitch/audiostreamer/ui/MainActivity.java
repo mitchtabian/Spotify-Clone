@@ -59,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements
     private boolean mIsPlaying;
     private SeekBarBroadcastReceiver mSeekbarBroadcastReceiver;
     private UpdateUIBroadcastReceiver mUpdateUIBroadcastReceiver;
+    private boolean mOnAppOpen;
 
 
     @Override
@@ -201,6 +202,7 @@ public class MainActivity extends AppCompatActivity implements
                 mMediaBrowserHelper.getTransportControls().playFromMediaId(mediaItem.getDescription().getMediaId(), bundle);
             }
 
+            mOnAppOpen = true;
         }
         else{
             Toast.makeText(this, "select something to play", Toast.LENGTH_SHORT).show();
@@ -220,12 +222,25 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void playPause() {
-        Log.d(TAG, "playPause: " + mIsPlaying);
-        if (mIsPlaying) {
-            mMediaBrowserHelper.getTransportControls().pause();
+        if(mOnAppOpen){
+            if (mIsPlaying) {
+                mMediaBrowserHelper.getTransportControls().pause();
+            }
+            else {
+                mMediaBrowserHelper.getTransportControls().play();
+            }
         }
-        else {
-            mMediaBrowserHelper.getTransportControls().play();
+        else{
+            if(!getMyPreferenceManager().getPlaylistId().equals("")){
+                onMediaSelected(
+                        getMyPreferenceManager().getPlaylistId(),
+                        mMyApplication.getMediaItem(getMyPreferenceManager().getLastPlayedMedia()),
+                        getMyPreferenceManager().getQueuePosition()
+                );
+            }
+            else{
+                Toast.makeText(this, "select something to play", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -233,9 +248,74 @@ public class MainActivity extends AppCompatActivity implements
     public void onStart() {
         super.onStart();
 
-        mMediaBrowserHelper.onStart();
+        if(!getMyPreferenceManager().getPlaylistId().equals("")){
+            prepareLastPlayedMedia();
+        }
+        else{
+            mMediaBrowserHelper.onStart();
+        }
     }
 
+    /**
+     * In a production app you'd want to get this data from a cache.
+     */
+    private void prepareLastPlayedMedia(){
+        showPrgressBar();
+
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+
+        Query query  = firestore
+                .collection(getString(R.string.collection_audio))
+                .document(getString(R.string.document_categories))
+                .collection(getMyPreferenceManager().getLastCategory())
+                .document(getMyPreferenceManager().getLastPlayedArtist())
+                .collection(getString(R.string.collection_content))
+                .orderBy(getString(R.string.field_date_added), Query.Direction.ASCENDING);
+
+        final List<MediaMetadataCompat> mediaItems = new ArrayList<>();
+        query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        MediaMetadataCompat mediaItem = addToMediaList(document);
+                        mediaItems.add(mediaItem);
+                        if(mediaItem.getDescription().getMediaId().equals(getMyPreferenceManager().getLastPlayedMedia())){
+                            getMediaControllerFragment().setMediaTitle(mediaItem);
+                        }
+                    }
+                } else {
+                    Log.d(TAG, "Error getting documents: ", task.getException());
+                }
+                onFinishedGettingPreviousSessionData(mediaItems);
+            }
+        });
+    }
+
+    private void onFinishedGettingPreviousSessionData(List<MediaMetadataCompat> mediaItems){
+        mMyApplication.setMediaItems(mediaItems);
+        mMediaBrowserHelper.onStart();
+        hideProgressBar();
+    }
+
+    /**
+     * Translate the Firestore data into something the MediaBrowserService can deal with (MediaMetaDataCompat objects)
+     * @param document
+     */
+    private MediaMetadataCompat addToMediaList(QueryDocumentSnapshot document){
+
+        MediaMetadataCompat media = new MediaMetadataCompat.Builder()
+                .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, document.getString(getString(R.string.field_media_id)))
+                .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, document.getString(getString(R.string.field_artist)))
+                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, document.getString(getString(R.string.field_title)))
+                .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, document.getString(getString(R.string.field_media_url)))
+                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION, document.getString(getString(R.string.field_description)))
+                .putString(MediaMetadataCompat.METADATA_KEY_DATE, document.getDate(getString(R.string.field_date_added)).toString())
+                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI, getMyPreferenceManager().getLastPlayedArtistImage())
+                .build();
+
+        return media;
+    }
 
     @Override
     protected void onStop() {

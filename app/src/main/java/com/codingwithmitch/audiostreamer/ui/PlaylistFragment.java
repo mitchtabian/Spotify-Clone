@@ -176,6 +176,10 @@ public class PlaylistFragment extends Fragment implements
         // Save some properties for next time the app opens
         // NOTE: Normally you'd do this with a cache
         mIMainActivity.getMyPreferenceManager().savePlaylistId(mSelectArtist.getArtist_id()); // playlist id is same as artist id
+        mIMainActivity.getMyPreferenceManager().saveLastPlayedArtist(mSelectArtist.getArtist_id());
+        mIMainActivity.getMyPreferenceManager().saveLastPlayedCategory(mSelectedCategory);
+        mIMainActivity.getMyPreferenceManager().saveLastPlayedArtistImage(mSelectArtist.getImage());
+        mIMainActivity.getMyPreferenceManager().saveLastPlayedMedia(mSelectedMedia.getDescription().getMediaId());
     }
 
     @Override
