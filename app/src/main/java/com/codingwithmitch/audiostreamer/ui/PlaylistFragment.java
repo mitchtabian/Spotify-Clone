@@ -67,7 +67,7 @@ public class PlaylistFragment extends Fragment implements
         super.onCreate(savedInstanceState);
         if(getArguments() != null){
             mSelectedCategory = getArguments().getString("category");
-            mSelectedArtist = getArguments().getParcelable("artist");
+            mSelectArtist = getArguments().getParcelable("artist");
         }
         setRetainInstance(true);
     }
