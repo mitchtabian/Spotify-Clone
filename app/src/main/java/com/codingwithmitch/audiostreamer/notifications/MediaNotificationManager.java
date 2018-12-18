@@ -70,8 +70,48 @@ public class MediaNotificationManager {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
     }
 
-   
+    private NotificationCompat.Builder buildNotification(@NonNull PlaybackStateCompat state,
+                                                         MediaSessionCompat.Token token,
+                                                         boolean isPlaying,
+                                                         final MediaDescriptionCompat description,
+                                                         Bitmap bitmap) {
+
+        // Create the (mandatory) notification channel when running on Android Oreo.
+        if (isAndroidOOrHigher()) {
+            createChannel();
+        }
+
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(mMediaService, CHANNEL_ID);
+        builder.setStyle(
+                new android.support.v4.media.app.NotificationCompat.MediaStyle()
+                        .setMediaSession(token)
+                        .setShowActionsInCompactView(0, 1, 2))
+                .setColor(ContextCompat.getColor(mMediaService, R.color.notification_bg))
+                .setSmallIcon(R.drawable.ic_audiotrack_grey_24dp)
+                // Pending intent that is fired when user clicks on notification.
+                .setContentIntent(null)
+                // Title - Usually Song name.
+                .setContentTitle(description.getTitle())
+                // Subtitle - Usually Artist name.
+                .setContentText(description.getSubtitle())
+                .setLargeIcon(bitmap)
+                // When notification is deleted (when playback is paused and notification can be
+                // deleted) fire MediaButtonPendingIntent with ACTION_STOP.
+                .setDeleteIntent(null)
+                // Show controls on lock screen even when user hides sensitive content.
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+
+
+        return builder;
+    }
 }
+
+
+
+
+
+
 
 
 
