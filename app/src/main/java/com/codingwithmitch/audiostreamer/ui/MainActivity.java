@@ -50,9 +50,11 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
         }
         else if(fragment instanceof CategoryFragment){
             tag = getString(R.string.fragment_category);
+            transaction.addToBackStack(getString(R.string.fragment_category));
         }
         else if(fragment instanceof PlaylistFragment){
             tag = getString(R.string.fragment_playlist);
+            transaction.addToBackStack(getString(R.string.fragment_playlist));
         }
 
         transaction.add(R.id.main_container, fragment, tag);
