@@ -70,6 +70,11 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
+    public void onMediaControllerConnected(MediaControllerCompat mediaController) {
+        getMediaControllerFragment().getMediaSeekBar().setMediaController(mediaController);
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         initSeekBarBroadcastReceiver();
@@ -193,6 +198,7 @@ public class MainActivity extends AppCompatActivity implements
     protected void onStop() {
         super.onStop();
         mMediaBrowserHelper.onStop();
+        getMediaControllerFragment().getMediaSeekBar().disconnectController();
     }
 
     private void loadFragment(Fragment fragment, boolean lateralMovement){

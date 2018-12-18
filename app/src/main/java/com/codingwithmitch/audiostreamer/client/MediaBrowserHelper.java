@@ -129,6 +129,8 @@ public class MediaBrowserHelper {
 
             mMediaBrowser.subscribe(mMediaBrowser.getRoot(), mMediaBrowserSubscriptionCallback);
             Log.d(TAG, "onConnected: CALLED: subscribing to: " + mMediaBrowser.getRoot());
+
+            mMediaBrowserCallback.onMediaControllerConnected(mMediaController);
         }
     }
 

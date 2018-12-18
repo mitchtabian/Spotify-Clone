@@ -10,6 +10,8 @@ public interface MediaBrowserHelperCallback {
 
     void onPlaybackStateChanged(PlaybackStateCompat state);
 
+    void onMediaControllerConnected(MediaControllerCompat mediaController);
+
 }
 
 
