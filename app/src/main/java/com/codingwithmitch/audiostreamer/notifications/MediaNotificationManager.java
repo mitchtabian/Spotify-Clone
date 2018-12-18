@@ -2,7 +2,9 @@ package com.codingwithmitch.audiostreamer.notifications;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Build;
@@ -18,6 +20,7 @@ import android.util.Log;
 
 import com.codingwithmitch.audiostreamer.R;
 import com.codingwithmitch.audiostreamer.services.MediaService;
+import com.codingwithmitch.audiostreamer.ui.MainActivity;
 
 public class MediaNotificationManager {
 
@@ -26,6 +29,12 @@ public class MediaNotificationManager {
     private final MediaService mMediaService;
     private final NotificationManager mNotificationManager;
     private static final String CHANNEL_ID = "com.codingwithmitch.spotifyclone.musicplayer.channel";
+    private static final int REQUEST_CODE = 501;
+
+    private final NotificationCompat.Action mPlayAction;
+    private final NotificationCompat.Action mPauseAction;
+    private final NotificationCompat.Action mNextAction;
+    private final NotificationCompat.Action mPrevAction;
 
     public MediaNotificationManager(MediaService mediaService) {
         mMediaService = mediaService;
@@ -33,7 +42,37 @@ public class MediaNotificationManager {
 
         mNotificationManager = (NotificationManager) mMediaService.getSystemService(Context.NOTIFICATION_SERVICE);
 
+        mPlayAction =
+                new NotificationCompat.Action(
+                        R.drawable.ic_play_arrow_white_24dp,
+                        mMediaService.getString(R.string.label_play),
+                        MediaButtonReceiver.buildMediaButtonPendingIntent(
+                                mMediaService,
+                                PlaybackStateCompat.ACTION_PLAY));
+        mPauseAction =
+                new NotificationCompat.Action(
+                        R.drawable.ic_pause_circle_outline_white_24dp,
+                        mMediaService.getString(R.string.label_pause),
+                        MediaButtonReceiver.buildMediaButtonPendingIntent(
+                                mMediaService,
+                                PlaybackStateCompat.ACTION_PAUSE));
+        mNextAction =
+                new NotificationCompat.Action(
+                        R.drawable.ic_skip_next_white_24dp,
+                        mMediaService.getString(R.string.label_next),
+                        MediaButtonReceiver.buildMediaButtonPendingIntent(
+                                mMediaService,
+                                PlaybackStateCompat.ACTION_SKIP_TO_NEXT));
+        mPrevAction =
+                new NotificationCompat.Action(
+                        R.drawable.ic_skip_previous_white_24dp,
+                        mMediaService.getString(R.string.label_previous),
+                        MediaButtonReceiver.buildMediaButtonPendingIntent(
+                                mMediaService,
+                                PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS));
 
+        // cancel all previously shown notifications
+        mNotificationManager.cancelAll();
     }
 
     public NotificationManager getNotificationManager() {
@@ -90,7 +129,7 @@ public class MediaNotificationManager {
                 .setColor(ContextCompat.getColor(mMediaService, R.color.notification_bg))
                 .setSmallIcon(R.drawable.ic_audiotrack_grey_24dp)
                 // Pending intent that is fired when user clicks on notification.
-                .setContentIntent(null)
+                .setContentIntent(createContentIntent())
                 // Title - Usually Song name.
                 .setContentTitle(description.getTitle())
                 // Subtitle - Usually Artist name.
@@ -98,12 +137,20 @@ public class MediaNotificationManager {
                 .setLargeIcon(bitmap)
                 // When notification is deleted (when playback is paused and notification can be
                 // deleted) fire MediaButtonPendingIntent with ACTION_STOP.
-                .setDeleteIntent(null)
+                .setDeleteIntent(MediaButtonReceiver.buildMediaButtonPendingIntent(
+                        mMediaService, PlaybackStateCompat.ACTION_STOP))
                 // Show controls on lock screen even when user hides sensitive content.
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
 
 
         return builder;
+    }
+
+    private PendingIntent createContentIntent() {
+        Intent openUI = new Intent(mMediaService, MainActivity.class);
+        openUI.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        return PendingIntent.getActivity(
+                mMediaService, REQUEST_CODE, openUI, PendingIntent.FLAG_CANCEL_CURRENT);
     }
 }
 
