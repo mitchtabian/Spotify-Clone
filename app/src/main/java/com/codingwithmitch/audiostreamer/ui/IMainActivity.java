@@ -12,3 +12,4 @@ public interface IMainActivity {
 
     void onArtistSelected(String category, Artist artist);
 }
+

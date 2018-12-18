@@ -8,12 +8,14 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.codingwithmitch.audiostreamer.R;
 import com.codingwithmitch.audiostreamer.adapters.HomeRecyclerAdapter;
+import com.codingwithmitch.audiostreamer.models.Artist;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
@@ -96,6 +98,7 @@ public class HomeFragment extends Fragment implements
     public void onCategorySelected(int position) {
         mIMainActivity.onCategorySelected(mCategories.get(position));
     }
+
 
     @Override
     public void onAttach(Context context) {
