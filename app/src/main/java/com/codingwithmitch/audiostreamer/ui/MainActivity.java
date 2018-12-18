@@ -177,39 +177,6 @@ public class MainActivity extends AppCompatActivity implements IMainActivity
         outState.putInt("active_fragments", MainActivityFragmentManager.getInstance().getFragments().size());
     }
 
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        restoreFragmentView(savedInstanceState);
-    }
-
-    private void restoreFragmentView(Bundle bundle){
-        int numFragments = bundle.getInt("active_fragments");
-        if(numFragments > 0){
-            HomeFragment homeFragment = (HomeFragment)getSupportFragmentManager()
-                    .findFragmentByTag(getString(R.string.fragment_home));
-            if(homeFragment != null){
-                Log.d(TAG, "restoreFragmentView: HomeFragment is ALIVE!");
-                MainActivityFragmentManager.getInstance().addFragment(homeFragment);
-            }
-
-            CategoryFragment categoryFragment = (CategoryFragment)getSupportFragmentManager()
-                    .findFragmentByTag(getString(R.string.fragment_category));
-            if(categoryFragment != null){
-                Log.d(TAG, "restoreFragmentView: CategoryFragment is ALIVE!");
-                MainActivityFragmentManager.getInstance().addFragment(categoryFragment);
-            }
-
-            PlaylistFragment playlistFragment = (PlaylistFragment)getSupportFragmentManager()
-                    .findFragmentByTag(getString(R.string.fragment_playlist));
-            if(playlistFragment != null){
-                Log.d(TAG, "restoreFragmentView: PlaylistFragment is ALIVE!");
-                MainActivityFragmentManager.getInstance().addFragment(playlistFragment);
-            }
-
-
-        }
-    }
 
     @Override
     public void hideProgressBar() {

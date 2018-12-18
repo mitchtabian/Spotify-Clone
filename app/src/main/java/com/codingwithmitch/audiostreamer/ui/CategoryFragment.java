@@ -63,6 +63,7 @@ public class CategoryFragment extends Fragment implements CategoryRecyclerAdapte
         if(getArguments() != null){
             mSelectedCategory = getArguments().getString("category");
         }
+		setRetainInstance(true);
     }
 
 
@@ -109,12 +110,13 @@ public class CategoryFragment extends Fragment implements CategoryRecyclerAdapte
         mAdapter.notifyDataSetChanged();
     }
 
-    private void initRecyclerView(View view) {
-        if(mRecyclerView == null){
-            mRecyclerView = view.findViewById(R.id.recycler_view);
-            mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-            mAdapter = new CategoryRecyclerAdapter(getActivity(),  mArtists, this);
-            mRecyclerView.setAdapter(mAdapter);
+    private void initRecyclerView(View view){
+        mRecyclerView = view.findViewById(R.id.recycler_view);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        mAdapter = new CategoryRecyclerAdapter(getActivity(), mArtists, this);
+        mRecyclerView.setAdapter(mAdapter);
+
+        if(mArtists.size() == 0){
             retrieveArtists();
         }
     }
