@@ -161,6 +161,12 @@ public class PlaylistFragment extends Fragment implements
         saveLastPlayedSongProperties();
     }
 
+    public void updateUI(MediaMetadataCompat mediaItem){
+        mAdapter.setSelectedIndex(mAdapter.getIndexOfItem(mediaItem));
+        mSelectedMedia = mediaItem;
+        saveLastPlayedSongProperties();
+    }
+
     private void saveLastPlayedSongProperties(){
         // Save some properties for next time the app opens
         // NOTE: Normally you'd do this with a cache

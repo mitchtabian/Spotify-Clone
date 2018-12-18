@@ -9,4 +9,6 @@ public interface PlaybackInfoListener {
     void onSeekTo(long progress, long max);
 
     void onPlaybackComplete();
+
+    void updateUI(String newMediaId);
 }

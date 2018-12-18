@@ -224,6 +224,15 @@ public class MediaService extends MediaBrowserServiceCompat {
     public class MediaPlayerListener implements PlaybackInfoListener {
 
         @Override
+        public void updateUI(String newMediaId) {
+            Log.d(TAG, "updateUI: CALLED: " + newMediaId);
+            Intent intent = new Intent();
+            intent.setAction(getString(R.string.broadcast_update_ui));
+            intent.putExtra(getString(R.string.broadcast_new_media_id), newMediaId);
+            sendBroadcast(intent);
+        }
+
+        @Override
         public void onPlaybackStateChange(PlaybackStateCompat state) {
             // Report the state to the MediaSession.
             mSession.setPlaybackState(state);

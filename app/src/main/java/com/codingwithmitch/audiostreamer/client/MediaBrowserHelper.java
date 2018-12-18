@@ -48,8 +48,6 @@ public class MediaBrowserHelper {
     // i.e.: Which is the current item, whether it's playing or paused, etc.
     private class MediaControllerCallback extends MediaControllerCompat.Callback {
 
-
-
         @Override
         public void onMetadataChanged(final MediaMetadataCompat metadata) {
             Log.d(TAG, "onMetadataChanged: CALLED");

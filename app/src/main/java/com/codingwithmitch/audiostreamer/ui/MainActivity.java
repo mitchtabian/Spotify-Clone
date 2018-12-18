@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements
     private MyPreferenceManager mMyPrefManager;
     private boolean mIsPlaying;
     private SeekBarBroadcastReceiver mSeekbarBroadcastReceiver;
+    private UpdateUIBroadcastReceiver mUpdateUIBroadcastReceiver;
 
 
     @Override
@@ -69,6 +70,26 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    private class UpdateUIBroadcastReceiver extends BroadcastReceiver{
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String newMediaId = intent.getStringExtra(getString(R.string.broadcast_new_media_id));
+            Log.d(TAG, "onReceive: CALLED: " + newMediaId);
+            if(getPlaylistFragment() != null){
+                Log.d(TAG, "onReceive: " + mMyApplication.getMediaItem(newMediaId).getDescription().getMediaId());
+                getPlaylistFragment().updateUI(mMyApplication.getMediaItem(newMediaId));
+            }
+        }
+    }
+
+    private void initUpdateUIBroadcastReceiver(){
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(getString(R.string.broadcast_update_ui));
+        mUpdateUIBroadcastReceiver = new UpdateUIBroadcastReceiver();
+        registerReceiver(mUpdateUIBroadcastReceiver, intentFilter);
+    }
+
     @Override
     public void onMediaControllerConnected(MediaControllerCompat mediaController) {
         getMediaControllerFragment().getMediaSeekBar().setMediaController(mediaController);
@@ -78,6 +99,7 @@ public class MainActivity extends AppCompatActivity implements
     protected void onResume() {
         super.onResume();
         initSeekBarBroadcastReceiver();
+        initUpdateUIBroadcastReceiver();
     }
 
     @Override
@@ -85,6 +107,9 @@ public class MainActivity extends AppCompatActivity implements
         super.onPause();
         if(mSeekbarBroadcastReceiver != null){
             unregisterReceiver(mSeekbarBroadcastReceiver);
+        }
+        if(mUpdateUIBroadcastReceiver != null){
+            unregisterReceiver(mUpdateUIBroadcastReceiver);
         }
     }
 
@@ -132,6 +157,14 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    private PlaylistFragment getPlaylistFragment(){
+        PlaylistFragment playlistFragment = (PlaylistFragment)getSupportFragmentManager()
+                .findFragmentByTag(getString(R.string.fragment_playlist));
+        if(playlistFragment != null){
+            return playlistFragment;
+        }
+        return null;
+    }
 
     private MediaControllerFragment getMediaControllerFragment(){
         MediaControllerFragment mediaControllerFragment = (MediaControllerFragment)getSupportFragmentManager()
@@ -243,7 +276,7 @@ public class MainActivity extends AppCompatActivity implements
         transaction.commit();
 
         for(Fragment f: MainActivityFragmentManager.getInstance().getFragments()){
-            if(f != null){
+            if(f != null ){
                 if(!f.getTag().equals(fragment.getTag())){
                     FragmentTransaction t = getSupportFragmentManager().beginTransaction();
                     t.hide(f);
