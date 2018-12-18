@@ -20,8 +20,6 @@ public class MediaSeekBar extends AppCompatSeekBar {
     private static final String TAG = "MediaSeekBar";
 
     private MediaControllerCompat mMediaController;
-    private ControllerCallback mControllerCallback;
-
     private boolean mIsTracking = false;
 
     private OnSeekBarChangeListener mOnSeekBarChangeListener = new OnSeekBarChangeListener() {
@@ -67,49 +65,28 @@ public class MediaSeekBar extends AppCompatSeekBar {
     }
 
     public void setMediaController(final MediaControllerCompat mediaController) {
-        if (mediaController != null) {
-            mControllerCallback = new ControllerCallback();
-            mediaController.registerCallback(mControllerCallback);
-        } else if (mMediaController != null) {
-            mMediaController.unregisterCallback(mControllerCallback);
-            mControllerCallback = null;
-        }
         mMediaController = mediaController;
     }
 
     public void disconnectController() {
         if (mMediaController != null) {
-            mMediaController.unregisterCallback(mControllerCallback);
-            mControllerCallback = null;
             mMediaController = null;
         }
     }
 
-    private class ControllerCallback
-            extends MediaControllerCompat.Callback {
 
-        @Override
-        public void onSessionDestroyed() {
-            super.onSessionDestroyed();
-        }
-
-
-        @Override
-        public void onPlaybackStateChanged(PlaybackStateCompat state) {
-            super.onPlaybackStateChanged(state);
-            Log.d(TAG, "onPlaybackStateChanged: CALLED: playback state: " + state);
-
-            final int progress = state != null
-                    ? (int) state.getPosition()
-                    : 0;
-            setProgress(progress);
-
-        }
-
-        @Override
-        public void onMetadataChanged(MediaMetadataCompat metadata) {
-            super.onMetadataChanged(metadata);
-        }
-
-    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
