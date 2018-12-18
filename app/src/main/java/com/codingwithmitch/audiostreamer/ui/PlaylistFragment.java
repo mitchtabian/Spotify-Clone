@@ -69,6 +69,7 @@ public class PlaylistFragment extends Fragment implements
             mSelectedCategory = getArguments().getString("category");
             mSelectArtist = getArguments().getParcelable("artist");
         }
+		setRetainInstance(true);
     }
 
     @Override
@@ -132,13 +133,14 @@ public class PlaylistFragment extends Fragment implements
         mAdapter.notifyDataSetChanged();
     }
 
-    private void initRecyclerView(View view) {
-        if(mRecyclerView == null){
-            mRecyclerView = view.findViewById(R.id.recycler_view);
-            mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-            mAdapter = new PlaylistRecyclerAdapter(getActivity(),  mMediaList, this);
-            mRecyclerView.setAdapter(mAdapter);
-            retrieveMedia();
+    private void initRecyclerView(View view){
+        mRecyclerView = view.findViewById(R.id.recycler_view);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        mAdapter = new HomeRecyclerAdapter(getActivity(), mCategories, this);
+        mRecyclerView.setAdapter(mAdapter);
+
+        if(mCategories.size() == 0){
+            retrieveCategories();
         }
     }
 
