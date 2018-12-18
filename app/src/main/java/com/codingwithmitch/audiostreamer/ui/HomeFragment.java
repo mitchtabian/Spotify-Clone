@@ -49,6 +49,13 @@ public class HomeFragment extends Fragment implements HomeRecyclerAdapter.IHomeS
             mIMainActivity.setActionBarTitle(getString(R.string.categories));
         }
     }
+	
+	@Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+    }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -89,13 +96,14 @@ public class HomeFragment extends Fragment implements HomeRecyclerAdapter.IHomeS
         mIMainActivity.hideProgressBar();
         mAdapter.notifyDataSetChanged();
     }
+	
+    private void initRecyclerView(View view){
+        mRecyclerView = view.findViewById(R.id.recycler_view);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        mAdapter = new HomeRecyclerAdapter(getActivity(), mCategories, this);
+        mRecyclerView.setAdapter(mAdapter);
 
-    private void initRecyclerView(View view) {
-        if(mRecyclerView == null){
-            mRecyclerView = view.findViewById(R.id.recycler_view);
-            mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-            mAdapter = new HomeRecyclerAdapter(mCategories, getActivity(), this);
-            mRecyclerView.setAdapter(mAdapter);
+        if(mCategories.size() == 0){
             retrieveCategories();
         }
     }
