@@ -15,6 +15,7 @@ import android.util.Log;
 
 
 import com.codingwithmitch.audiostreamer.MyApplication;
+import com.codingwithmitch.audiostreamer.R;
 import com.codingwithmitch.audiostreamer.players.MediaPlayerAdapter;
 import com.codingwithmitch.audiostreamer.players.PlaybackInfoListener;
 import com.codingwithmitch.audiostreamer.util.MediaLibrary;
@@ -24,6 +25,8 @@ import java.util.List;
 
 import static com.codingwithmitch.audiostreamer.util.Constants.MEDIA_QUEUE_POSITION;
 import static com.codingwithmitch.audiostreamer.util.Constants.QUEUE_NEW_PLAYLIST;
+import static com.codingwithmitch.audiostreamer.util.Constants.SEEK_BAR_MAX;
+import static com.codingwithmitch.audiostreamer.util.Constants.SEEK_BAR_PROGRESS;
 
 public class MediaService extends MediaBrowserServiceCompat {
 
@@ -224,9 +227,23 @@ public class MediaService extends MediaBrowserServiceCompat {
         public void onPlaybackStateChange(PlaybackStateCompat state) {
             // Report the state to the MediaSession.
             mSession.setPlaybackState(state);
-
         }
 
+        @Override
+        public void onSeekTo(long progress, long max) {
+//            Log.d(TAG, "onSeekTo: CALLED: updating seekbar: " + progress + ", max: " + max);
+            Intent intent = new Intent();
+            intent.setAction(getString(R.string.broadcast_seekbar_update));
+            intent.putExtra(SEEK_BAR_PROGRESS, progress);
+            intent.putExtra(SEEK_BAR_MAX, max);
+            sendBroadcast(intent);
+        }
+
+        @Override
+        public void onPlaybackComplete() {
+            Log.d(TAG, "onPlaybackComplete: SKIPPING TO NEXT.");
+            mSession.getController().getTransportControls().skipToNext();
+        }
     }
 }
 

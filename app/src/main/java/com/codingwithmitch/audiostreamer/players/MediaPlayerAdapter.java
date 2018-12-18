@@ -2,6 +2,7 @@ package com.codingwithmitch.audiostreamer.players;
 
 import android.content.Context;
 import android.net.Uri;
+import android.os.Handler;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.v4.media.MediaMetadataCompat;
@@ -174,8 +175,24 @@ public class MediaPlayerAdapter extends PlayerAdapter {
         play();
     }
 
-    private void startTrackingPlayback(){
-        // Begin tracking the playback
+    public void startTrackingPlayback(){
+        final Handler handler = new Handler();
+        final Runnable runnable = new Runnable(){
+            @Override
+            public void run() {
+                if(isPlaying()){
+                    mPlaybackInfoListener.onSeekTo(
+                            mExoPlayer.getContentPosition(), mExoPlayer.getDuration()
+                    );
+                    handler.postDelayed(this, 100);
+                }
+                if(mExoPlayer.getContentPosition() >= mExoPlayer.getDuration()
+                        && mExoPlayer.getDuration() > 0){
+                    mPlaybackInfoListener.onPlaybackComplete();
+                }
+            }
+        };
+        handler.postDelayed(runnable, 100);
     }
 
 

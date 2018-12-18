@@ -1,6 +1,10 @@
 package com.codingwithmitch.audiostreamer.ui;
 
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.media.MediaMetadataCompat;
@@ -26,6 +30,8 @@ import java.util.ArrayList;
 
 import static com.codingwithmitch.audiostreamer.util.Constants.MEDIA_QUEUE_POSITION;
 import static com.codingwithmitch.audiostreamer.util.Constants.QUEUE_NEW_PLAYLIST;
+import static com.codingwithmitch.audiostreamer.util.Constants.SEEK_BAR_MAX;
+import static com.codingwithmitch.audiostreamer.util.Constants.SEEK_BAR_PROGRESS;
 
 
 public class MainActivity extends AppCompatActivity implements
@@ -43,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements
     private MyApplication mMyApplication;
     private MyPreferenceManager mMyPrefManager;
     private boolean mIsPlaying;
+    private SeekBarBroadcastReceiver mSeekbarBroadcastReceiver;
 
 
     @Override
@@ -61,6 +68,41 @@ public class MainActivity extends AppCompatActivity implements
             loadFragment(HomeFragment.newInstance(), true);
         }
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        initSeekBarBroadcastReceiver();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if(mSeekbarBroadcastReceiver != null){
+            unregisterReceiver(mSeekbarBroadcastReceiver);
+        }
+    }
+
+    private class SeekBarBroadcastReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            long seekProgress = intent.getLongExtra(SEEK_BAR_PROGRESS, 0);
+            long seekMax = intent.getLongExtra(SEEK_BAR_MAX, 0);
+            if(!getMediaControllerFragment().getMediaSeekBar().isTracking()){
+                getMediaControllerFragment().getMediaSeekBar().setProgress((int)seekProgress);
+                getMediaControllerFragment().getMediaSeekBar().setMax((int)seekMax);
+            }
+        }
+    }
+
+    private void initSeekBarBroadcastReceiver(){
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(getString(R.string.broadcast_seekbar_update));
+        mSeekbarBroadcastReceiver = new SeekBarBroadcastReceiver();
+        registerReceiver(mSeekbarBroadcastReceiver, intentFilter);
+    }
+
 
     @Override
     public void onMetadataChanged(MediaMetadataCompat metadata) {
