@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.media.MediaMetadataCompat;
@@ -25,8 +26,15 @@ import com.codingwithmitch.audiostreamer.models.Artist;
 import com.codingwithmitch.audiostreamer.services.MediaService;
 import com.codingwithmitch.audiostreamer.util.MainActivityFragmentManager;
 import com.codingwithmitch.audiostreamer.util.MyPreferenceManager;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static com.codingwithmitch.audiostreamer.util.Constants.MEDIA_QUEUE_POSITION;
 import static com.codingwithmitch.audiostreamer.util.Constants.QUEUE_NEW_PLAYLIST;
@@ -212,6 +220,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void playPause() {
+        Log.d(TAG, "playPause: " + mIsPlaying);
         if (mIsPlaying) {
             mMediaBrowserHelper.getTransportControls().pause();
         }
@@ -227,9 +236,11 @@ public class MainActivity extends AppCompatActivity implements
         mMediaBrowserHelper.onStart();
     }
 
+
     @Override
     protected void onStop() {
         super.onStop();
+        Log.d(TAG, "onStop: called.");
         mMediaBrowserHelper.onStop();
         getMediaControllerFragment().getMediaSeekBar().disconnectController();
     }

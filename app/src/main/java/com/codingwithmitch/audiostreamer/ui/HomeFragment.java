@@ -99,7 +99,7 @@ public class HomeFragment extends Fragment implements HomeRecyclerAdapter.IHomeS
     private void initRecyclerView(View view){
         mRecyclerView = view.findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        mAdapter = new HomeRecyclerAdapter(getActivity(), mCategories, this);
+        mAdapter = new HomeRecyclerAdapter(mCategories, getActivity(),  this);
         mRecyclerView.setAdapter(mAdapter);
 
         if(mCategories.size() == 0){

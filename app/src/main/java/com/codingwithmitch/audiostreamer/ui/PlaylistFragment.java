@@ -82,6 +82,10 @@ public class PlaylistFragment extends Fragment implements
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         initRecyclerView(view);
         mIMainActivity.setActionBarTitle(mSelectArtist.getTitle());
+
+        if(savedInstanceState != null){
+            mAdapter.setSelectedIndex(savedInstanceState.getInt("selected_index"));
+        }
     }
 
     private void retrieveMedia(){
@@ -172,6 +176,12 @@ public class PlaylistFragment extends Fragment implements
         // Save some properties for next time the app opens
         // NOTE: Normally you'd do this with a cache
         mIMainActivity.getMyPreferenceManager().savePlaylistId(mSelectArtist.getArtist_id()); // playlist id is same as artist id
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt("selected_index", mAdapter.getSelectedIndex());
     }
 }
 

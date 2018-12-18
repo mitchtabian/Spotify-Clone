@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.media.MediaMetadataCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,8 +36,15 @@ public class MediaControllerFragment extends Fragment implements
 
     // Vars
     private IMainActivity mIMainActivity;
+    private MediaMetadataCompat mSelectedMedia;
+    private boolean mIsPlaying;
 
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+    }
 
     @Nullable
     @Override
@@ -52,6 +60,14 @@ public class MediaControllerFragment extends Fragment implements
         mSeekBarAudio = view.findViewById(R.id.seekbar_audio);
 
         mPlayPause.setOnClickListener(this);
+
+        if(savedInstanceState != null){
+            mSelectedMedia = savedInstanceState.getParcelable("selected_media");
+            if(mSelectedMedia != null){
+                setMediaTitle(mSelectedMedia);
+                setIsPlaying(savedInstanceState.getBoolean("is_playing"));
+            }
+        }
     }
 
     public MediaSeekBar getMediaSeekBar(){
@@ -76,9 +92,11 @@ public class MediaControllerFragment extends Fragment implements
                     .load(R.drawable.ic_play_circle_outline_white_24dp)
                     .into(mPlayPause);
         }
+        mIsPlaying = isPlaying;
     }
 
     public void setMediaTitle(MediaMetadataCompat mediaItem){
+        mSelectedMedia = mediaItem;
         mSongTitle.setText(mediaItem.getDescription().getTitle());
     }
 
@@ -86,6 +104,13 @@ public class MediaControllerFragment extends Fragment implements
     public void onAttach(Context context) {
         super.onAttach(context);
         mIMainActivity = (IMainActivity) getActivity();
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable("selected_media", mSelectedMedia);
+        outState.putBoolean("is_playing", mIsPlaying);
     }
 }
 
