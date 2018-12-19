@@ -147,6 +147,17 @@ public class MediaNotificationManager {
                 // Show controls on lock screen even when user hides sensitive content.
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
 
+		// If skip to previous action is enabled.
+        if ((state.getActions() & PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS) != 0) {
+            builder.addAction(mPrevAction);
+        }
+
+        builder.addAction(isPlaying ? mPauseAction : mPlayAction);
+
+        // If skip to next action is enabled.
+        if ((state.getActions() & PlaybackStateCompat.ACTION_SKIP_TO_NEXT) != 0) {
+            builder.addAction(mNextAction);
+        }
 
         return builder.build();
     }
