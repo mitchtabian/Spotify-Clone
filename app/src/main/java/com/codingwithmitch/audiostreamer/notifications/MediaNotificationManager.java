@@ -70,9 +70,8 @@ public class MediaNotificationManager {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
     }
 
-    private NotificationCompat.Builder buildNotification(@NonNull PlaybackStateCompat state,
+    public Notification buildNotification(@NonNull PlaybackStateCompat state,
                                                          MediaSessionCompat.Token token,
-                                                         boolean isPlaying,
                                                          final MediaDescriptionCompat description,
                                                          Bitmap bitmap) {
 
@@ -103,7 +102,7 @@ public class MediaNotificationManager {
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
 
 
-        return builder;
+        return builder.build();
     }
 }
 
