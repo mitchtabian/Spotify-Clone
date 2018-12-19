@@ -30,7 +30,7 @@ public class MediaNotificationManager {
     private final MediaService mMediaService;
     private final NotificationManager mNotificationManager;
     private static final String CHANNEL_ID = "com.codingwithmitch.spotifyclone.musicplayer.channel";
-    private static final int REQUEST_CODE = 501;
+    private static final int REQUEST_CODE = 101;
 
     private final NotificationCompat.Action mPlayAction;
     private final NotificationCompat.Action mPauseAction;
