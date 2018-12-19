@@ -1,9 +1,12 @@
 package com.codingwithmitch.audiostreamer.services;
 
+import android.app.Notification;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaBrowserServiceCompat;
 import android.support.v4.media.MediaDescriptionCompat;
@@ -14,8 +17,14 @@ import android.text.TextUtils;
 import android.util.Log;
 
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.codingwithmitch.audiostreamer.MyApplication;
 import com.codingwithmitch.audiostreamer.R;
+import com.codingwithmitch.audiostreamer.notifications.MediaNotificationManager;
 import com.codingwithmitch.audiostreamer.players.MediaPlayerAdapter;
 import com.codingwithmitch.audiostreamer.players.PlaybackInfoListener;
 import com.codingwithmitch.audiostreamer.util.MediaLibrary;
@@ -37,6 +46,8 @@ public class MediaService extends MediaBrowserServiceCompat {
     private MediaPlayerAdapter mPlayback;
     private MyApplication mMyApplication;
     private MyPreferenceManager mMyPrefManager;
+    private MediaNotificationManager mMediaNotificationManager;
+    private boolean mIsServiceStarted;
 
 
     @Override
@@ -61,7 +72,9 @@ public class MediaService extends MediaBrowserServiceCompat {
         // A token that can be used to create a MediaController for this session
         setSessionToken(mSession.getSessionToken());
 
+
         mPlayback = new MediaPlayerAdapter(this, new MediaPlayerListener());
+        mMediaNotificationManager = new MediaNotificationManager(this);
     }
 
     @Override
@@ -230,6 +243,12 @@ public class MediaService extends MediaBrowserServiceCompat {
 
     public class MediaPlayerListener implements PlaybackInfoListener {
 
+        private final ServiceManager mServiceManager;
+
+        MediaPlayerListener() {
+            mServiceManager = new ServiceManager();
+        }
+
         @Override
         public void updateUI(String newMediaId) {
             Log.d(TAG, "updateUI: CALLED: " + newMediaId);
@@ -260,8 +279,68 @@ public class MediaService extends MediaBrowserServiceCompat {
             Log.d(TAG, "onPlaybackComplete: SKIPPING TO NEXT.");
             mSession.getController().getTransportControls().skipToNext();
         }
+
+
+        class ServiceManager {
+
+            private PlaybackStateCompat mState;
+
+            public ServiceManager() {
+            }
+
+
+            private void displayNotification(){
+                // Manage the started state of this service.
+                Notification notification = null;
+                switch (mState.getState()) {
+
+                    case PlaybackStateCompat.STATE_PLAYING:
+                        notification =
+                                mMediaNotificationManager.buildNotification(
+                                        mState, getSessionToken(), mPlayback.getCurrentMedia().getDescription(), null);
+
+                        if (!mIsServiceStarted) {
+                            ContextCompat.startForegroundService(
+                                    MediaService.this,
+                                    new Intent(MediaService.this, MediaService.class));
+                            mIsServiceStarted = true;
+                        }
+
+                        startForeground(MediaNotificationManager.NOTIFICATION_ID, notification);
+                        break;
+
+                    case PlaybackStateCompat.STATE_PAUSED:
+                        stopForeground(false);
+                        notification =
+                                mMediaNotificationManager.buildNotification(
+                                        mState, getSessionToken(), mPlayback.getCurrentMedia().getDescription(), null);
+                        mMediaNotificationManager.getNotificationManager()
+                                .notify(MediaNotificationManager.NOTIFICATION_ID, notification);
+                        break;
+                }
+            }
+
+            private void moveServiceOutOfStartedState() {
+                stopForeground(true);
+                stopSelf();
+                mIsServiceStarted = false;
+            }
+        }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

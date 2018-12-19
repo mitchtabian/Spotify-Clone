@@ -31,6 +31,7 @@ public class MediaNotificationManager {
     private final NotificationManager mNotificationManager;
     private static final String CHANNEL_ID = "com.codingwithmitch.spotifyclone.musicplayer.channel";
     private static final int REQUEST_CODE = 101;
+    public static final int NOTIFICATION_ID = 201;
 
     private final NotificationCompat.Action mPlayAction;
     private final NotificationCompat.Action mPauseAction;
@@ -109,6 +110,7 @@ public class MediaNotificationManager {
     private boolean isAndroidOOrHigher() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
     }
+
 
     public Notification buildNotification(@NonNull PlaybackStateCompat state,
                                            MediaSessionCompat.Token token,
