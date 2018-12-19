@@ -31,6 +31,7 @@ public class MediaBrowserHelper {
     private final MediaBrowserSubscriptionCallback mMediaBrowserSubscriptionCallback;
     private MediaControllerCallback mMediaControllerCallback;
     private MediaBrowserHelperCallback mMediaBrowserCallback;
+    private boolean mWasConfigurationChange;
 
 
     public MediaBrowserHelper(Context context, Class<? extends MediaBrowserServiceCompat> serviceClass) {
@@ -81,7 +82,9 @@ public class MediaBrowserHelper {
         mMediaBrowser.subscribe(newPlatlistId, mMediaBrowserSubscriptionCallback);
     }
 
-    public void onStart() {
+
+    public void onStart(boolean wasConfigurationChange) {
+        mWasConfigurationChange = wasConfigurationChange;
         if (mMediaBrowser == null) {
             mMediaBrowser =
                     new MediaBrowserCompat(
@@ -134,6 +137,7 @@ public class MediaBrowserHelper {
     }
 
 
+
     // Receives callbacks from the MediaBrowser when the MediaBrowserService has loaded new media
     // that is ready for playback.
     public class MediaBrowserSubscriptionCallback extends MediaBrowserCompat.SubscriptionCallback {
@@ -143,10 +147,13 @@ public class MediaBrowserHelper {
                                      @NonNull List<MediaBrowserCompat.MediaItem> children) {
             Log.d(TAG, "onChildrenLoaded: CALLED: " + parentId + ", " + children.toString());
 
-            for (final MediaBrowserCompat.MediaItem mediaItem : children) {
-                Log.d(TAG, "onChildrenLoaded: CALLED: queue item: " + mediaItem.getMediaId());
-                mMediaController.addQueueItem(mediaItem.getDescription());
+            if(!mWasConfigurationChange){
+                for (final MediaBrowserCompat.MediaItem mediaItem : children) {
+                    Log.d(TAG, "onChildrenLoaded: CALLED: queue item: " + mediaItem.getMediaId());
+                    mMediaController.addQueueItem(mediaItem.getDescription());
+                }
             }
+
         }
     }
 

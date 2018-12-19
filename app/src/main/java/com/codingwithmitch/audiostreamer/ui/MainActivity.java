@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Configuration;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -60,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements
     private SeekBarBroadcastReceiver mSeekbarBroadcastReceiver;
     private UpdateUIBroadcastReceiver mUpdateUIBroadcastReceiver;
     private boolean mOnAppOpen;
+    private boolean mWasConfigurationChange = false;
 
 
     @Override
@@ -244,6 +246,13 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        mWasConfigurationChange = true;
+    }
+
     @Override
     public void onStart() {
         super.onStart();
@@ -252,8 +261,16 @@ public class MainActivity extends AppCompatActivity implements
             prepareLastPlayedMedia();
         }
         else{
-            mMediaBrowserHelper.onStart();
+            mMediaBrowserHelper.onStart(mWasConfigurationChange);
         }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d(TAG, "onStop: called.");
+        mMediaBrowserHelper.onStop();
+        getMediaControllerFragment().getMediaSeekBar().disconnectController();
     }
 
     /**
@@ -294,7 +311,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private void onFinishedGettingPreviousSessionData(List<MediaMetadataCompat> mediaItems){
         mMyApplication.setMediaItems(mediaItems);
-        mMediaBrowserHelper.onStart();
+        mMediaBrowserHelper.onStart(mWasConfigurationChange);
         hideProgressBar();
     }
 
@@ -315,14 +332,6 @@ public class MainActivity extends AppCompatActivity implements
                 .build();
 
         return media;
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        Log.d(TAG, "onStop: called.");
-        mMediaBrowserHelper.onStop();
-        getMediaControllerFragment().getMediaSeekBar().disconnectController();
     }
 
     private void loadFragment(Fragment fragment, boolean lateralMovement){
