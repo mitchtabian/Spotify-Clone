@@ -1,5 +1,6 @@
 package com.codingwithmitch.audiostreamer.notifications;
 
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -109,11 +110,13 @@ public class MediaNotificationManager {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
     }
 
-    private NotificationCompat.Builder buildNotification(@NonNull PlaybackStateCompat state,
-                                                         MediaSessionCompat.Token token,
-                                                         boolean isPlaying,
-                                                         final MediaDescriptionCompat description,
-                                                         Bitmap bitmap) {
+    public Notification buildNotification(@NonNull PlaybackStateCompat state,
+                                           MediaSessionCompat.Token token,
+//                                           boolean isPlaying,
+                                           final MediaDescriptionCompat description,
+                                           Bitmap bitmap) {
+
+        boolean isPlaying = state.getState() == PlaybackStateCompat.STATE_PLAYING;
 
         // Create the (mandatory) notification channel when running on Android Oreo.
         if (isAndroidOOrHigher()) {
@@ -143,7 +146,7 @@ public class MediaNotificationManager {
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
 
 
-        return builder;
+        return builder.build();
     }
 
     private PendingIntent createContentIntent() {
