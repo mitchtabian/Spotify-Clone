@@ -242,7 +242,12 @@ public class MediaService extends MediaBrowserServiceCompat {
 
 
     public class MediaPlayerListener implements PlaybackInfoListener {
-        
+
+        private final ServiceManager mServiceManager;
+
+        MediaPlayerListener() {
+            mServiceManager = new ServiceManager();
+        }
 
         @Override
         public void updateUI(String newMediaId) {
@@ -257,6 +262,21 @@ public class MediaService extends MediaBrowserServiceCompat {
         public void onPlaybackStateChange(PlaybackStateCompat state) {
             // Report the state to the MediaSession.
             mSession.setPlaybackState(state);
+
+
+            // Manage the started state of this service.
+            switch (state.getState()) {
+                case PlaybackStateCompat.STATE_PLAYING:
+                    mServiceManager.displayNotification(state);
+                    break;
+                case PlaybackStateCompat.STATE_PAUSED:
+                    mServiceManager.displayNotification(state);
+                    break;
+                case PlaybackStateCompat.STATE_STOPPED:
+                    Log.d(TAG, "onPlaybackStateChange: STOPPED.");
+                    mServiceManager.moveServiceOutOfStartedState();
+                    break;
+            }
         }
 
         @Override
@@ -278,14 +298,13 @@ public class MediaService extends MediaBrowserServiceCompat {
 
         class ServiceManager {
 
-            private PlaybackStateCompat mState;
 
             public ServiceManager() {
             }
 
 
             public void displayNotification(PlaybackStateCompat state){
-                
+
                 // Manage the started state of this service.
                 Notification notification = null;
                 switch (state.getState()) {

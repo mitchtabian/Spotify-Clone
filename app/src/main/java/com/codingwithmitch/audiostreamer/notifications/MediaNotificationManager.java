@@ -130,7 +130,8 @@ public class MediaNotificationManager {
         builder.setStyle(
                 new android.support.v4.media.app.NotificationCompat.MediaStyle()
                         .setMediaSession(token)
-                        .setShowActionsInCompactView(0, 1, 2))
+                        .setShowActionsInCompactView(0, 1, 2)
+        )
                 .setColor(ContextCompat.getColor(mMediaService, R.color.notification_bg))
                 .setSmallIcon(R.drawable.ic_audiotrack_grey_24dp)
                 // Pending intent that is fired when user clicks on notification.
@@ -147,7 +148,7 @@ public class MediaNotificationManager {
                 // Show controls on lock screen even when user hides sensitive content.
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
 
-		// If skip to previous action is enabled.
+        // If skip to previous action is enabled.
         if ((state.getActions() & PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS) != 0) {
             builder.addAction(mPrevAction);
         }
