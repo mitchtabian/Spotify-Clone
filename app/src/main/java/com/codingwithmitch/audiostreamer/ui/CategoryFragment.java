@@ -113,11 +113,11 @@ public class CategoryFragment extends Fragment implements CategoryRecyclerAdapte
     private void initRecyclerView(View view){
         mRecyclerView = view.findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        mAdapter = new HomeRecyclerAdapter(getActivity(), mCategories, this);
+        mAdapter = new CategoryRecyclerAdapter(getActivity(), mArtists, this);
         mRecyclerView.setAdapter(mAdapter);
 
-        if(mCategories.size() == 0){
-            retrieveCategories();
+        if(mArtists.size() == 0){
+            retrieveArtists();
         }
     }
 
