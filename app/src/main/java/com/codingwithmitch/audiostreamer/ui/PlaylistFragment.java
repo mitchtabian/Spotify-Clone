@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 
 import com.codingwithmitch.audiostreamer.R;
 import com.codingwithmitch.audiostreamer.adapters.CategoryRecyclerAdapter;
+import com.codingwithmitch.audiostreamer.adapters.HomeRecyclerAdapter;
 import com.codingwithmitch.audiostreamer.adapters.PlaylistRecyclerAdapter;
 import com.codingwithmitch.audiostreamer.models.Artist;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -136,11 +137,11 @@ public class PlaylistFragment extends Fragment implements
     private void initRecyclerView(View view){
         mRecyclerView = view.findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        mAdapter = new HomeRecyclerAdapter(getActivity(), mCategories, this);
+        mAdapter = new PlaylistRecyclerAdapter(getActivity(), mMediaList,  this);
         mRecyclerView.setAdapter(mAdapter);
 
-        if(mCategories.size() == 0){
-            retrieveCategories();
+        if(mMediaList.size() == 0){
+            retrieveMedia();
         }
     }
 
