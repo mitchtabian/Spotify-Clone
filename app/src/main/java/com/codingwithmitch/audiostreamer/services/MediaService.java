@@ -242,12 +242,7 @@ public class MediaService extends MediaBrowserServiceCompat {
 
 
     public class MediaPlayerListener implements PlaybackInfoListener {
-
-        private final ServiceManager mServiceManager;
-
-        MediaPlayerListener() {
-            mServiceManager = new ServiceManager();
-        }
+        
 
         @Override
         public void updateUI(String newMediaId) {
