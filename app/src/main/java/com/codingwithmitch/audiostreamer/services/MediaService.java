@@ -284,15 +284,16 @@ public class MediaService extends MediaBrowserServiceCompat {
             }
 
 
-            private void displayNotification(){
+            public void displayNotification(PlaybackStateCompat state){
+                
                 // Manage the started state of this service.
                 Notification notification = null;
-                switch (mState.getState()) {
+                switch (state.getState()) {
 
                     case PlaybackStateCompat.STATE_PLAYING:
                         notification =
                                 mMediaNotificationManager.buildNotification(
-                                        mState, getSessionToken(), mPlayback.getCurrentMedia().getDescription(), null);
+                                        state, getSessionToken(), mPlayback.getCurrentMedia().getDescription(), null);
 
                         if (!mIsServiceStarted) {
                             ContextCompat.startForegroundService(
@@ -308,7 +309,7 @@ public class MediaService extends MediaBrowserServiceCompat {
                         stopForeground(false);
                         notification =
                                 mMediaNotificationManager.buildNotification(
-                                        mState, getSessionToken(), mPlayback.getCurrentMedia().getDescription(), null);
+                                        state, getSessionToken(), mPlayback.getCurrentMedia().getDescription(), null);
                         mMediaNotificationManager.getNotificationManager()
                                 .notify(MediaNotificationManager.NOTIFICATION_ID, notification);
                         break;
