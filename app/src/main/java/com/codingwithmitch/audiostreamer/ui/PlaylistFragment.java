@@ -86,6 +86,17 @@ public class PlaylistFragment extends Fragment implements
         if(savedInstanceState != null){
             mAdapter.setSelectedIndex(savedInstanceState.getInt("selected_index"));
         }
+
+    }
+
+    private void getSelectedMediaItem(String mediaId){
+        for(MediaMetadataCompat mediaItem: mMediaList){
+            if(mediaItem.getDescription().getMediaId().equals(mediaId)){
+                mSelectedMedia = mediaItem;
+                mAdapter.setSelectedIndex(mAdapter.getIndexOfItem(mSelectedMedia));
+                break;
+            }
+        }
     }
 
     private void retrieveMedia(){
@@ -135,6 +146,9 @@ public class PlaylistFragment extends Fragment implements
     private void updateDataSet(){
         mIMainActivity.hideProgressBar();
         mAdapter.notifyDataSetChanged();
+        if(mIMainActivity.getMyPreferenceManager().getLastPlayedArtist().equals(mSelectArtist.getArtist_id())){
+            getSelectedMediaItem(mIMainActivity.getMyPreferenceManager().getLastPlayedMedia());
+        }
     }
 
     private void initRecyclerView(View view){
