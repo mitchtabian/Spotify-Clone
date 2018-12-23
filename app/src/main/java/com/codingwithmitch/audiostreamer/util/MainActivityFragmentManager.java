@@ -2,11 +2,10 @@ package com.codingwithmitch.audiostreamer.util;
 
 import android.support.v4.app.Fragment;
 
-import com.codingwithmitch.audiostreamer.ui.MediaControllerFragment;
-
 import java.util.ArrayList;
 
 public class MainActivityFragmentManager {
+
 
     private ArrayList<Fragment> mFragments = new ArrayList<>();
     private static MainActivityFragmentManager instance;
@@ -17,6 +16,7 @@ public class MainActivityFragmentManager {
         }
         return instance;
     }
+
 
     public void addFragment(Fragment fragment){
         mFragments.add(fragment);
@@ -38,6 +38,20 @@ public class MainActivityFragmentManager {
         mFragments.clear();
     }
 
-
-
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

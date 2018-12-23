@@ -60,6 +60,7 @@ public class Artist implements Parcelable {
         this.artist_id = artist_id;
     }
 
+
     @Override
     public int describeContents() {
         return 0;

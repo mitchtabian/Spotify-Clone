@@ -21,13 +21,11 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-
 import java.util.ArrayList;
 import java.util.HashMap;
 
 
-public class HomeFragment extends Fragment implements
-        HomeRecyclerAdapter.IHomeSelector
+public class HomeFragment extends Fragment implements HomeRecyclerAdapter.IHomeSelector
 {
 
     private static final String TAG = "HomeFragment";
@@ -36,24 +34,26 @@ public class HomeFragment extends Fragment implements
     // UI Components
     private RecyclerView mRecyclerView;
 
-
     // Vars
     private HomeRecyclerAdapter mAdapter;
     private ArrayList<String> mCategories = new ArrayList<>();
     private IMainActivity mIMainActivity;
 
-
-    public static HomeFragment newInstance() {
+    public static HomeFragment newInstance(){
         return new HomeFragment();
     }
 
-
     @Override
     public void onHiddenChanged(boolean hidden) {
-        super.onHiddenChanged(hidden);
         if(!hidden){
             mIMainActivity.setActionBarTitle(getString(R.string.categories));
         }
+    }
+	
+	@Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
     }
 
     @Override
@@ -65,14 +65,15 @@ public class HomeFragment extends Fragment implements
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         initRecyclerView(view);
+        mIMainActivity.setActionBarTitle(getString(R.string.categories));
     }
 
-    public void retrieveCategories(){
-        mIMainActivity.showProgressBar();
+    private void retrieveCategories(){
+        mIMainActivity.showPrgressBar();
 
         FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
-        DocumentReference ref  = firestore
+        DocumentReference ref = firestore
                 .collection(getString(R.string.collection_audio))
                 .document(getString(R.string.document_categories));
 
@@ -81,32 +82,30 @@ public class HomeFragment extends Fragment implements
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if(task.isSuccessful()){
                     DocumentSnapshot doc = task.getResult();
-                    HashMap<String, String> categoriesMap = (HashMap)doc.getData().get(getString(R.string.field_categories));
+                    Log.d(TAG, "onComplete: " + doc);
+                    HashMap<String, String> categoriesMap = (HashMap)doc.getData().get("categories");
                     mCategories.addAll(categoriesMap.keySet());
                 }
                 updateDataSet();
             }
         });
-
     }
 
-
     private void updateDataSet(){
-        mAdapter.notifyDataSetChanged();
         mIMainActivity.hideProgressBar();
+        mAdapter.notifyDataSetChanged();
     }
 
     private void initRecyclerView(View view){
-        if(mRecyclerView == null){
-            mRecyclerView = view.findViewById(R.id.recycler_view);
-            mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-            mAdapter = new HomeRecyclerAdapter(getActivity(), mCategories, this);
-            mRecyclerView.setAdapter(mAdapter);
+        mRecyclerView = view.findViewById(R.id.recycler_view);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        mAdapter = new HomeRecyclerAdapter(mCategories, getActivity(),  this);
+        mRecyclerView.setAdapter(mAdapter);
+
+        if(mCategories.size() == 0){
             retrieveCategories();
         }
     }
-
-
 
     @Override
     public void onAttach(Context context) {
@@ -115,10 +114,12 @@ public class HomeFragment extends Fragment implements
     }
 
     @Override
-    public void onCategorySelected(int position) {
-        Log.d(TAG, "onCategorySelected: called.");
-        mIMainActivity.onCategorySelected(mCategories.get(position));
+    public void onCategorySelected(int postion) {
+        Log.d(TAG, "onCategorySelected: list item is clicked!");
+        mIMainActivity.onCategorySelected(mCategories.get(postion));
     }
+
+
 }
 
 

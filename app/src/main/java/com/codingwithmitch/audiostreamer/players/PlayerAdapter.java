@@ -39,6 +39,71 @@ public abstract class PlayerAdapter {
     private static final float MEDIA_VOLUME_DEFAULT = 1.0f;
     private static final float MEDIA_VOLUME_DUCK = 0.2f;
 
+    private final Context mApplicationContext;
+    private final AudioManager mAudioManager;
+    private final AudioFocusHelper mAudioFocusHelper;
+    private boolean mPlayOnAudioFocus = false;
+
+
+
+    public PlayerAdapter(@NonNull Context context) {
+        mApplicationContext = context.getApplicationContext();
+        mAudioManager = (AudioManager) mApplicationContext.getSystemService(Context.AUDIO_SERVICE);
+        mAudioFocusHelper = new AudioFocusHelper();
+    }
+
+
+    /**
+     * Public methods for handle the NOISY broadcast and AudioFocus
+     */
+
+    public final void play() {
+        if (mAudioFocusHelper.requestAudioFocus()) {
+            registerAudioNoisyReceiver();
+            onPlay();
+        }
+    }
+
+    public final void stop() {
+        mAudioFocusHelper.abandonAudioFocus();
+        unregisterAudioNoisyReceiver();
+        onStop();
+    }
+
+
+    public final void pause() {
+        if (!mPlayOnAudioFocus) {
+            mAudioFocusHelper.abandonAudioFocus();
+        }
+
+        unregisterAudioNoisyReceiver();
+        onPause();
+    }
+
+
+    /**
+     *  Abstract methods for responding to playback changes in the class that extends this one
+     */
+    protected abstract void onPlay();
+
+    protected abstract void onPause();
+
+    public abstract void playFromMedia(MediaMetadataCompat metadata);
+
+    public abstract MediaMetadataCompat getCurrentMedia();
+
+    public abstract boolean isPlaying();
+
+    protected abstract void onStop();
+
+    public abstract void seekTo(long position);
+
+    public abstract void setVolume(float volume);
+
+
+    /**
+     *  NOISY broadcast receiver stuff
+     */
     private static final IntentFilter AUDIO_NOISY_INTENT_FILTER =
             new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
 
@@ -55,65 +120,6 @@ public abstract class PlayerAdapter {
                 }
             };
 
-    private final Context mApplicationContext;
-    private final AudioManager mAudioManager;
-    private final AudioFocusHelper mAudioFocusHelper;
-
-    private boolean mPlayOnAudioFocus = false;
-
-    public PlayerAdapter(@NonNull Context context) {
-        mApplicationContext = context.getApplicationContext();
-        mAudioManager = (AudioManager) mApplicationContext.getSystemService(Context.AUDIO_SERVICE);
-        mAudioFocusHelper = new AudioFocusHelper();
-    }
-
-    public abstract void playFromMedia(MediaMetadataCompat metadata);
-
-    public abstract MediaMetadataCompat getCurrentMedia();
-
-    public abstract boolean isPlaying();
-
-    public final void play() {
-        if (mAudioFocusHelper.requestAudioFocus()) {
-            registerAudioNoisyReceiver();
-            onPlay();
-        }
-    }
-
-    /**
-     * Called when media is ready to be played and indicates the app has audio focus.
-     */
-    protected abstract void onPlay();
-
-    public final void pause() {
-        if (!mPlayOnAudioFocus) {
-            mAudioFocusHelper.abandonAudioFocus();
-        }
-
-        unregisterAudioNoisyReceiver();
-        onPause();
-    }
-
-    /**
-     * Called when media must be paused.
-     */
-    protected abstract void onPause();
-
-    public final void stop() {
-        mAudioFocusHelper.abandonAudioFocus();
-        unregisterAudioNoisyReceiver();
-        onStop();
-    }
-
-    /**
-     * Called when the media must be stopped. The player should clean up resources at this
-     * point.
-     */
-    protected abstract void onStop();
-
-    public abstract void seekTo(long position);
-
-    public abstract void setVolume(float volume);
 
     private void registerAudioNoisyReceiver() {
         if (!mAudioNoisyReceiverRegistered) {
@@ -128,6 +134,7 @@ public abstract class PlayerAdapter {
             mAudioNoisyReceiverRegistered = false;
         }
     }
+
 
     /**
      * Helper class for managing audio focus related tasks.

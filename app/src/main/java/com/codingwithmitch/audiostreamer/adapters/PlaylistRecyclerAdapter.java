@@ -67,6 +67,10 @@ public class PlaylistRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.V
         notifyDataSetChanged();
     }
 
+    public int getSelectedIndex(){
+        return mSelectedIndex;
+    }
+
     public int getIndexOfItem(MediaMetadataCompat mediaItem){
         for(int i = 0; i<mMediaList.size(); i++ ){
             if(mMediaList.get(i).getDescription().getMediaId().equals(mediaItem.getDescription().getMediaId())){
@@ -101,15 +105,3 @@ public class PlaylistRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.V
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-

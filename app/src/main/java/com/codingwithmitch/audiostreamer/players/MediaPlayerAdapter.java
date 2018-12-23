@@ -1,15 +1,14 @@
 package com.codingwithmitch.audiostreamer.players;
 
-
 import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
 
-import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
@@ -21,96 +20,56 @@ import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
-import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
-import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DataSource;
-import com.google.android.exoplayer2.upstream.DefaultAllocator;
-import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
-import com.google.android.exoplayer2.util.PriorityTaskManager;
 import com.google.android.exoplayer2.util.Util;
 
-/**
- * Exposes the functionality of the {ExoPlayer} and implements the {@link PlayerAdapter}
- * so that {@MainActivity} can control music playback.
- */
-public final class MediaPlayerAdapter extends PlayerAdapter {
+public class MediaPlayerAdapter extends PlayerAdapter {
+
 
     private static final String TAG = "MediaPlayerAdapter";
 
-    private static final BandwidthMeter BANDWIDTH_METER = new DefaultBandwidthMeter();
 
     private final Context mContext;
-    private String mMediaId;
-    private PlaybackInfoListener mPlaybackInfoListener;
     private MediaMetadataCompat mCurrentMedia;
-    private int mState;
     private boolean mCurrentMediaPlayedToCompletion;
+    private int mState;
     private long mStartTime;
+    private PlaybackInfoListener mPlaybackInfoListener;
+
 
     // ExoPlayer objects
     private SimpleExoPlayer mExoPlayer;
     private TrackSelector mTrackSelector;
     private DefaultRenderersFactory mRenderersFactory;
     private DataSource.Factory mDataSourceFactory;
+    private ExoPlayerEventListener mExoPlayerEventListener;
 
 
-    public MediaPlayerAdapter(Context context, PlaybackInfoListener listener) {
+    public MediaPlayerAdapter(Context context, PlaybackInfoListener playbackInfoListener) {
         super(context);
         mContext = context.getApplicationContext();
-        mPlaybackInfoListener = listener;
-
+        mPlaybackInfoListener = playbackInfoListener;
     }
 
-    /**
-     * Once the {ExoPlayer} is released, it can't be used again, and another one has to be
-     * created. In the onStop() method of the {MainActivity} the {ExoPlayer} is
-     * released. Then in the onStart() of the {MainActivity} a new {ExoPlayer}
-     * object has to be created. That's why this method is private, and called by load(int) and
-     * not the constructor.
-     */
-    private void initializeExoPlayer() {
-//        initExoPlayerMethod1();
-        initExoPlayerMethod2();
-    }
 
-    private void initExoPlayerMethod2(){
+    private void initializeExoPlayer(){
         if (mExoPlayer == null) {
             mTrackSelector = new DefaultTrackSelector();
             mRenderersFactory = new DefaultRenderersFactory(mContext);
             mDataSourceFactory = new DefaultDataSourceFactory(mContext, Util.getUserAgent(mContext, "AudioStreamer"));
             mExoPlayer = ExoPlayerFactory.newSimpleInstance(mRenderersFactory, mTrackSelector, new DefaultLoadControl());
-            mExoPlayer.addListener(new ExoPlayerEventListener());
+
+            if(mExoPlayerEventListener == null){
+                mExoPlayerEventListener = new ExoPlayerEventListener();
+            }
+            mExoPlayer.addListener(mExoPlayerEventListener);
         }
     }
 
-    private void initExoPlayerMethod1(){
-        if (mExoPlayer == null) {
-
-            TrackSelection.Factory adaptiveTrackSelectionFactory =
-                    new AdaptiveTrackSelection.Factory(BANDWIDTH_METER);
-            mTrackSelector = new DefaultTrackSelector(adaptiveTrackSelectionFactory);
-            PriorityTaskManager taskManager = new PriorityTaskManager();
-            taskManager.add(1);
-            DefaultLoadControl loadControl = new DefaultLoadControl( // Load control for ExoPlayer v2.8.4
-                    new DefaultAllocator(true, 64 * 1024),
-                    100000, // min buffer ms
-                    1000000, // max buffer ms
-                    50,
-                    1000,
-                    C.LENGTH_UNSET,
-                    true,
-                    taskManager
-            );
-            mExoPlayer = ExoPlayerFactory.newSimpleInstance(mContext, mTrackSelector, loadControl);
-            mDataSourceFactory = new DefaultDataSourceFactory(mContext, Util.getUserAgent(mContext, "AudioStreamer"));
-            mExoPlayer.addListener(new ExoPlayerEventListener());
-        }
-    }
 
     private void release() {
         if (mExoPlayer!= null) {
@@ -119,77 +78,9 @@ public final class MediaPlayerAdapter extends PlayerAdapter {
         }
     }
 
-    // Implements PlaybackControl.
-    @Override
-    public void playFromMedia(MediaMetadataCompat metadata) {
-        mCurrentMedia = metadata;
-        playFile(metadata);
-        startTrackingPlayback();
-    }
-
-    @Override
-    public MediaMetadataCompat getCurrentMedia() {
-        return mCurrentMedia;
-    }
-
-    private void playFile(MediaMetadataCompat metaData) {
-        String mediaId = metaData.getDescription().getMediaId();
-        boolean mediaChanged = (mMediaId == null || !mediaId.equals(mMediaId));
-        if (mCurrentMediaPlayedToCompletion) {
-            // Last audio file was played to completion, the resourceId hasn't changed, but the
-            // player was released, so force a reload of the media file for playback.
-            mediaChanged = true;
-            mCurrentMediaPlayedToCompletion = false;
-        }
-        if (!mediaChanged) {
-            if (!isPlaying()) {
-                play();
-            }
-            return;
-        }
-        else {
-            release();
-        }
-
-        mMediaId = mediaId;
-
-        initializeExoPlayer();
-
-        try {
-            MediaSource audioSource =
-                    new ExtractorMediaSource.Factory(mDataSourceFactory)
-                            .createMediaSource(Uri.parse(metaData.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI)));
-            mExoPlayer.prepare(audioSource);
-            Log.d(TAG, "onPlayerStateChanged: PREPARE");
-
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to play media uri: "
-                    + metaData.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI), e);
-        }
-
-        play();
-    }
-
-
-    @Override
-    public void onStop() {
-        // Regardless of whether or not the ExoPlayer has been created / started, the state must
-        // be updated, so that MediaNotificationManager can take down the notification.
-        Log.d(TAG, "onStop: stopped");
-        setNewState(PlaybackStateCompat.STATE_STOPPED);
-        release();
-    }
-
-
-    @Override
-    public boolean isPlaying() {
-        return mExoPlayer != null && mExoPlayer.getPlayWhenReady();
-    }
-
     @Override
     protected void onPlay() {
         if (mExoPlayer != null && !mExoPlayer.getPlayWhenReady()) {
-            Log.d(TAG, "onPlayerStateChanged: PLAY WHEN READY");
             mExoPlayer.setPlayWhenReady(true);
             setNewState(PlaybackStateCompat.STATE_PLAYING);
         }
@@ -201,6 +92,31 @@ public final class MediaPlayerAdapter extends PlayerAdapter {
             mExoPlayer.setPlayWhenReady(false);
             setNewState(PlaybackStateCompat.STATE_PAUSED);
         }
+    }
+
+    @Override
+    public void playFromMedia(MediaMetadataCompat metadata) {
+        startTrackingPlayback();
+        playFile(metadata);
+    }
+
+    @Override
+    public MediaMetadataCompat getCurrentMedia() {
+        return mCurrentMedia;
+    }
+
+    @Override
+    public boolean isPlaying() {
+        return mExoPlayer != null && mExoPlayer.getPlayWhenReady();
+    }
+
+    @Override
+    protected void onStop() {
+        // Regardless of whether or not the ExoPlayer has been created / started, the state must
+        // be updated, so that MediaNotificationManager can take down the notification.
+        Log.d(TAG, "onStop: stopped");
+        setNewState(PlaybackStateCompat.STATE_STOPPED);
+        release();
     }
 
     @Override
@@ -221,6 +137,64 @@ public final class MediaPlayerAdapter extends PlayerAdapter {
         }
     }
 
+    private void playFile(MediaMetadataCompat metaData) {
+        String mediaId = metaData.getDescription().getMediaId();
+        boolean mediaChanged = (mCurrentMedia == null || !mediaId.equals(mCurrentMedia.getDescription().getMediaId()));
+        if (mCurrentMediaPlayedToCompletion) {
+            // Last audio file was played to completion, the resourceId hasn't changed, but the
+            // player was released, so force a reload of the media file for playback.
+            mediaChanged = true;
+            mCurrentMediaPlayedToCompletion = false;
+        }
+        if (!mediaChanged) {
+            if (!isPlaying()) {
+                play();
+            }
+            return;
+        }
+        else {
+            release();
+        }
+
+        mCurrentMedia = metaData;
+
+        initializeExoPlayer();
+
+        try {
+            MediaSource audioSource =
+                    new ExtractorMediaSource.Factory(mDataSourceFactory)
+                            .createMediaSource(Uri.parse(metaData.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI)));
+            mExoPlayer.prepare(audioSource);
+            Log.d(TAG, "onPlayerStateChanged: PREPARE");
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to play media uri: "
+                    + metaData.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI), e);
+        }
+
+        play();
+    }
+
+    public void startTrackingPlayback(){
+        final Handler handler = new Handler();
+        final Runnable runnable = new Runnable(){
+            @Override
+            public void run() {
+                if(isPlaying()){
+                    mPlaybackInfoListener.onSeekTo(
+                            mExoPlayer.getContentPosition(), mExoPlayer.getDuration()
+                    );
+                    handler.postDelayed(this, 100);
+                }
+                if(mExoPlayer.getContentPosition() >= mExoPlayer.getDuration()
+                        && mExoPlayer.getDuration() > 0){
+                    mPlaybackInfoListener.onPlaybackComplete();
+                }
+            }
+        };
+        handler.postDelayed(runnable, 100);
+    }
+
 
     // This is the main reducer for the player state machine.
     private void setNewState(@PlaybackStateCompat.State int newPlayerState) {
@@ -233,8 +207,11 @@ public final class MediaPlayerAdapter extends PlayerAdapter {
         }
 
         final long reportPosition = mExoPlayer == null ? 0 : mExoPlayer.getCurrentPosition();
+
+        // Send playback state information to service
         publishStateBuilder(reportPosition);
     }
+
 
     private void publishStateBuilder(long reportPosition){
         final PlaybackStateCompat.Builder stateBuilder = new PlaybackStateCompat.Builder();
@@ -244,7 +221,7 @@ public final class MediaPlayerAdapter extends PlayerAdapter {
                 1.0f,
                 SystemClock.elapsedRealtime());
         mPlaybackInfoListener.onPlaybackStateChange(stateBuilder.build());
-        mPlaybackInfoListener.updateUI(mMediaId);
+        mPlaybackInfoListener.updateUI(mCurrentMedia.getDescription().getMediaId());
     }
 
     /**
@@ -280,27 +257,6 @@ public final class MediaPlayerAdapter extends PlayerAdapter {
                         | PlaybackStateCompat.ACTION_PAUSE;
         }
         return actions;
-    }
-
-
-    public void startTrackingPlayback(){
-        final Handler handler = new Handler();
-        final Runnable runnable = new Runnable(){
-            @Override
-            public void run() {
-                if(isPlaying()){
-                    mPlaybackInfoListener.onSeekTo(
-                            mExoPlayer.getContentPosition(), mExoPlayer.getDuration()
-                    );
-                    handler.postDelayed(this, 100);
-                }
-                if(mExoPlayer.getContentPosition() >= mExoPlayer.getDuration()
-                        && mExoPlayer.getDuration() > 0){
-                    mPlaybackInfoListener.onPlaybackComplete();
-                }
-            }
-        };
-        handler.postDelayed(runnable, 100);
     }
 
 
@@ -375,4 +331,30 @@ public final class MediaPlayerAdapter extends PlayerAdapter {
 
         }
     }
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

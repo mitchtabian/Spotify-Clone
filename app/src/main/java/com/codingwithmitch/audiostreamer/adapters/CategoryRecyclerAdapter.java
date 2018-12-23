@@ -86,15 +86,3 @@ public class CategoryRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.V
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-

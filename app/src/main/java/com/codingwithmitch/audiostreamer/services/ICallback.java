@@ -4,5 +4,5 @@ import android.graphics.Bitmap;
 
 public interface ICallback {
 
-    void done(Bitmap bm);
+    void done(Bitmap bitmap);
 }

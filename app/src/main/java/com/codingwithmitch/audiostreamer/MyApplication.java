@@ -6,7 +6,6 @@ import android.support.v4.media.MediaMetadataCompat;
 import android.util.Log;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -48,12 +47,7 @@ public class MyApplication extends Application {
     public MediaMetadataCompat getMediaItem(String mediaId){
         return mTreeMap.get(mediaId);
     }
-
 }
-
-
-
-
 
 
 

@@ -2,18 +2,12 @@ package com.codingwithmitch.audiostreamer.services;
 
 import android.app.Notification;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.IBinder;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaBrowserServiceCompat;
 import android.support.v4.media.MediaDescriptionCompat;
@@ -31,47 +25,41 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.codingwithmitch.audiostreamer.MyApplication;
 import com.codingwithmitch.audiostreamer.R;
-import com.codingwithmitch.audiostreamer.client.MediaBrowserHelper;
 import com.codingwithmitch.audiostreamer.notifications.MediaNotificationManager;
 import com.codingwithmitch.audiostreamer.players.MediaPlayerAdapter;
 import com.codingwithmitch.audiostreamer.players.PlaybackInfoListener;
-import com.codingwithmitch.audiostreamer.players.PlayerAdapter;
+
 import com.codingwithmitch.audiostreamer.util.MyPreferenceManager;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import static com.codingwithmitch.audiostreamer.util.MyPreferenceManager.EMPTY_MEDIA;
-import static com.codingwithmitch.audiostreamer.util.MyPreferenceManager.MEDIA_QUEUE_POSITION;
-import static com.codingwithmitch.audiostreamer.util.MyPreferenceManager.PLAYLIST_IDENTIFIER;
-import static com.codingwithmitch.audiostreamer.util.MyPreferenceManager.QUEUE_NEW_PLAYLIST;
-import static com.codingwithmitch.audiostreamer.util.MyPreferenceManager.SEEK_BAR_MAX;
-import static com.codingwithmitch.audiostreamer.util.MyPreferenceManager.SEEK_BAR_PROGRESS;
-
+import static com.codingwithmitch.audiostreamer.util.Constants.MEDIA_QUEUE_POSITION;
+import static com.codingwithmitch.audiostreamer.util.Constants.QUEUE_NEW_PLAYLIST;
+import static com.codingwithmitch.audiostreamer.util.Constants.SEEK_BAR_MAX;
+import static com.codingwithmitch.audiostreamer.util.Constants.SEEK_BAR_PROGRESS;
 
 public class MediaService extends MediaBrowserServiceCompat {
 
     private static final String TAG = "MediaService";
 
-
     private MediaSessionCompat mSession;
-    private MediaNotificationManager mMediaNotificationManager;
-    private boolean mServiceInStartedState;
-    private PlayerAdapter mPlayback;
-    private MyPreferenceManager mPreferenceManager;
+    private MediaPlayerAdapter mPlayback;
     private MyApplication mMyApplication;
+    private MyPreferenceManager mMyPrefManager;
+    private MediaNotificationManager mMediaNotificationManager;
+    private boolean mIsServiceStarted;
 
 
     @Override
     public void onCreate() {
         super.onCreate();
-
         mMyApplication = MyApplication.getInstance();
+        mMyPrefManager = new MyPreferenceManager(this);
 
         //Build the MediaSession
         mSession = new MediaSessionCompat(this, TAG);
-
 
         mSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS |
                 // https://developer.android.com/guide/topics/media-apps/mediabuttons#mediabuttons-and-active-mediasessions
@@ -86,10 +74,9 @@ public class MediaService extends MediaBrowserServiceCompat {
         // A token that can be used to create a MediaController for this session
         setSessionToken(mSession.getSessionToken());
 
-        mMediaNotificationManager = new MediaNotificationManager(this);
-        mPlayback = new MediaPlayerAdapter(this, new MediaPlayerListener());
 
-        mPreferenceManager = new MyPreferenceManager(this);
+        mPlayback = new MediaPlayerAdapter(this, new MediaPlayerListener());
+        mMediaNotificationManager = new MediaNotificationManager(this);
     }
 
     @Override
@@ -106,44 +93,31 @@ public class MediaService extends MediaBrowserServiceCompat {
         Log.d(TAG, "onDestroy: MediaPlayerAdapter stopped, and MediaSession released");
     }
 
+
     @Nullable
     @Override
-    public BrowserRoot onGetRoot(@NonNull String clientPackageName, int clientUid, @NonNull Bundle bundle) {
+    public BrowserRoot onGetRoot(@NonNull String s, int i, @Nullable Bundle bundle) {
 
-        Log.d(TAG, "onGetRoot: CALLED: " + clientPackageName + ", " + clientUid + ", " + bundle.toString());
-        String mediaSelector = bundle.getString(PLAYLIST_IDENTIFIER);
+        Log.d(TAG, "onGetRoot: called. ");
+        if(s.equals(getApplicationContext().getPackageName())){
 
-        if(mediaSelector != null){
-            if(!mediaSelector.equals("")){
-                return new BrowserRoot(mediaSelector, null); // return the playlist
-            }
+            // Allowed to browse media
+            return new BrowserRoot("some_real_playlist", null); // return no media
         }
-        return new BrowserRoot(EMPTY_MEDIA, null); // return no media
+        return new BrowserRoot("empty_media", null); // return no media
     }
 
-
-
-    /**
-     * Sends the list of MediaBrowserCompat.MediaItem objects to "onChildrenLoaded" in MediaBrowserHelper
-     * @param parentId
-     * @param result
-     */
     @Override
-    public void onLoadChildren(@NonNull String parentId, @NonNull final Result<List<MediaBrowserCompat.MediaItem>> result) {
-        Log.d(TAG, "onLoadChildren: CALLED: " + parentId + ", " + result);
+    public void onLoadChildren(@NonNull String s, @NonNull Result<List<MediaBrowserCompat.MediaItem>> result) {
+        Log.d(TAG, "onLoadChildren: called: " + s + ", " + result);
 
         //  Browsing not allowed
-        if (TextUtils.equals(EMPTY_MEDIA, parentId)) {
+        if (TextUtils.equals("empty_media", s)) {
             result.sendResult(null);
             return;
         }
-        for(MediaBrowserCompat.MediaItem item: mMyApplication.getMediaItems()){
-            Log.d(TAG, "onLoadChildren: CALLED: item: " + item);
-        }
         result.sendResult(mMyApplication.getMediaItems()); // return all available media
     }
-
-
 
 
     public class MediaSessionCallback extends MediaSessionCompat.Callback {
@@ -160,12 +134,10 @@ public class MediaService extends MediaBrowserServiceCompat {
         @Override
         public void onPlayFromMediaId(String mediaId, Bundle extras) {
             Log.d(TAG, "onPlayFromMediaId: CALLED.");
-            //Remove all previous queue items if new playlist
             if(extras.getBoolean(QUEUE_NEW_PLAYLIST, false)){
                 resetPlaylist();
             }
 
-            // Play the new media
             mPreparedMedia = mMyApplication.getTreeMap().get(mediaId);
             mSession.setMetadata(mPreparedMedia);
             if (!mSession.isActive()) {
@@ -180,10 +152,8 @@ public class MediaService extends MediaBrowserServiceCompat {
             else{
                 mQueueIndex = extras.getInt(MEDIA_QUEUE_POSITION);
             }
-            Log.d(TAG, "onPlayFromMediaId: called: playlist size: " + mPlaylist.size());
-            Log.d(TAG, "onPlayFromMediaId: called: queue pos: " + mQueueIndex);
-            mPreferenceManager.saveQueuePosition(mQueueIndex);
-            mPreferenceManager.saveLastPlayedMedia(mPreparedMedia.getDescription().getMediaId());
+            mMyPrefManager.saveQueuePosition(mQueueIndex);
+            mMyPrefManager.saveLastPlayedMedia(mPreparedMedia.getDescription().getMediaId());
         }
 
         @Override
@@ -208,7 +178,7 @@ public class MediaService extends MediaBrowserServiceCompat {
                 return;
             }
 
-            final String mediaId = mPlaylist.get(mQueueIndex).getDescription().getMediaId();
+            String mediaId = mPlaylist.get(mQueueIndex).getDescription().getMediaId();
             mPreparedMedia = mMyApplication.getTreeMap().get(mediaId);
             mSession.setMetadata(mPreparedMedia);
 
@@ -230,11 +200,8 @@ public class MediaService extends MediaBrowserServiceCompat {
             }
 
             mPlayback.playFromMedia(mPreparedMedia);
-
-            Log.d(TAG, "onPlay: called: MediaSession active");
-
-            mPreferenceManager.saveQueuePosition(mQueueIndex);
-            mPreferenceManager.saveLastPlayedMedia(mPreparedMedia.getDescription().getMediaId());
+            mMyPrefManager.saveQueuePosition(mQueueIndex);
+            mMyPrefManager.saveLastPlayedMedia(mPreparedMedia.getDescription().getMediaId());
         }
 
         @Override
@@ -251,6 +218,7 @@ public class MediaService extends MediaBrowserServiceCompat {
         @Override
         public void onSkipToNext() {
             Log.d(TAG, "onSkipToNext: SKIP TO NEXT");
+            // increment and then check using modulus
             mQueueIndex = (++mQueueIndex % mPlaylist.size());
             mPreparedMedia = null;
             onPlay();
@@ -275,14 +243,48 @@ public class MediaService extends MediaBrowserServiceCompat {
     }
 
 
-
-    // MediaPlayerAdapter Callback: MediaPlayerAdapter state -> MusicService.
     public class MediaPlayerListener implements PlaybackInfoListener {
 
         private final ServiceManager mServiceManager;
 
         MediaPlayerListener() {
             mServiceManager = new ServiceManager();
+        }
+
+        @Override
+        public void updateUI(String newMediaId) {
+            Log.d(TAG, "updateUI: CALLED: " + newMediaId);
+            Intent intent = new Intent();
+            intent.setAction(getString(R.string.broadcast_update_ui));
+            intent.putExtra(getString(R.string.broadcast_new_media_id), newMediaId);
+            sendBroadcast(intent);
+        }
+
+        @Override
+        public void onPlaybackStateChange(PlaybackStateCompat state) {
+            // Report the state to the MediaSession.
+            mSession.setPlaybackState(state);
+
+
+            // Manage the started state of this service.
+            switch (state.getState()) {
+                case PlaybackStateCompat.STATE_PLAYING:
+                    mServiceManager.updateNotification(
+                            state,
+                            mPlayback.getCurrentMedia().getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI)
+                    );
+                    break;
+                case PlaybackStateCompat.STATE_PAUSED:
+                    mServiceManager.updateNotification(
+                            state,
+                            mPlayback.getCurrentMedia().getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI)
+                    );
+                    break;
+                case PlaybackStateCompat.STATE_STOPPED:
+                    Log.d(TAG, "onPlaybackStateChange: STOPPED.");
+                    mServiceManager.moveServiceOutOfStartedState();
+                    break;
+            }
         }
 
         @Override
@@ -296,62 +298,32 @@ public class MediaService extends MediaBrowserServiceCompat {
         }
 
         @Override
-        public void updateUI(String newMediaId) {
-            Log.d(TAG, "updateUI: CALLED: " + newMediaId);
-            Intent intent = new Intent();
-            intent.setAction(getString(R.string.broadcast_update_ui));
-            intent.putExtra(getString(R.string.broadcast_new_media_id), newMediaId);
-            sendBroadcast(intent);
-        }
-
-        @Override
         public void onPlaybackComplete() {
             Log.d(TAG, "onPlaybackComplete: SKIPPING TO NEXT.");
             mSession.getController().getTransportControls().skipToNext();
         }
 
-        @Override
-        public void onPlaybackStateChange(PlaybackStateCompat state) {
-            // Report the state to the MediaSession.
-            mSession.setPlaybackState(state);
 
-            // Manage the started state of this service.
-            switch (state.getState()) {
-                case PlaybackStateCompat.STATE_PLAYING:
-                    mServiceManager.updatePlayPauseState(state,
-                            mPlayback.getCurrentMedia().getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI));
-                    break;
-                case PlaybackStateCompat.STATE_PAUSED:
-                    mServiceManager.updatePlayPauseState(state,
-                            mPlayback.getCurrentMedia().getString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI));
-                    break;
-                case PlaybackStateCompat.STATE_STOPPED:
-                    Log.d(TAG, "onPlaybackStateChange: STOPPED.");
-                    mServiceManager.moveServiceOutOfStartedState();
-                    break;
-            }
+        class ServiceManager implements ICallback {
 
-
-        }
-
-        class ServiceManager implements ICallback{
-
-            private GetArtistBitmapAsyncTask mAsyncTask;
-            private PlaybackStateCompat mState;
             private String mDisplayImageUri;
             private Bitmap mCurrentArtistBitmap;
+            private PlaybackStateCompat mState;
+            private GetArtistBitmapAsyncTask mAsyncTask;
 
             public ServiceManager() {
-
             }
 
-            private void updatePlayPauseState(PlaybackStateCompat state, String displayImageUri){
+            public void updateNotification(PlaybackStateCompat state, String displayImageUri){
                 mState = state;
+
                 if(!displayImageUri.equals(mDisplayImageUri)){
-                    mAsyncTask = new GetArtistBitmapAsyncTask(Glide.
-                            with(MediaService.this)
+                    // download new bitmap
+
+                    mAsyncTask = new GetArtistBitmapAsyncTask(
+                            Glide.with(MediaService.this)
                             .asBitmap()
-                            .load(mPlayback.getCurrentMedia().getDescription().getIconUri())
+                            .load(displayImageUri)
                             .listener(new RequestListener<Bitmap>() {
                                 @Override
                                 public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
@@ -360,91 +332,75 @@ public class MediaService extends MediaBrowserServiceCompat {
 
                                 @Override
                                 public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
-                                    return true;
+                                    return false;
                                 }
-                            }).submit(),
-                            this
-                    );
+                            }).submit(), this);
+
                     mAsyncTask.execute();
+
                     mDisplayImageUri = displayImageUri;
                 }
-               else{
+                else{
                     displayNotification(mCurrentArtistBitmap);
                 }
-
             }
 
-            private void moveServiceOutOfStartedState() {
-                stopForeground(true);
-                stopSelf();
-                mServiceInStartedState = false;
-            }
+            public void displayNotification(Bitmap bitmap){
 
-            @Override
-            public void done(Bitmap bm) {
-                mCurrentArtistBitmap = bm;
-                displayNotification(bm);
-            }
-
-            private void displayNotification(Bitmap bm){
                 // Manage the started state of this service.
                 Notification notification = null;
                 switch (mState.getState()) {
+
                     case PlaybackStateCompat.STATE_PLAYING:
                         notification =
-                                mMediaNotificationManager.getNotification(
-                                        mPlayback.getCurrentMedia(), mState, getSessionToken(), bm);
+                                mMediaNotificationManager.buildNotification(
+                                        mState, getSessionToken(), mPlayback.getCurrentMedia().getDescription(), bitmap);
 
-                        if (!mServiceInStartedState) {
+                        if (!mIsServiceStarted) {
                             ContextCompat.startForegroundService(
                                     MediaService.this,
                                     new Intent(MediaService.this, MediaService.class));
-                            mServiceInStartedState = true;
+                            mIsServiceStarted = true;
                         }
 
                         startForeground(MediaNotificationManager.NOTIFICATION_ID, notification);
                         break;
+
                     case PlaybackStateCompat.STATE_PAUSED:
                         stopForeground(false);
                         notification =
-                                mMediaNotificationManager.getNotification(
-                                        mPlayback.getCurrentMedia(), mState, getSessionToken(), bm);
+                                mMediaNotificationManager.buildNotification(
+                                        mState, getSessionToken(), mPlayback.getCurrentMedia().getDescription(), bitmap);
                         mMediaNotificationManager.getNotificationManager()
                                 .notify(MediaNotificationManager.NOTIFICATION_ID, notification);
                         break;
                 }
             }
+
+            private void moveServiceOutOfStartedState() {
+                stopForeground(true);
+                stopSelf();
+                mIsServiceStarted = false;
+            }
+
+            @Override
+            public void done(Bitmap bitmap) {
+                mCurrentArtistBitmap = bitmap;
+                displayNotification(mCurrentArtistBitmap);
+            }
         }
 
     }
 
-
     static class GetArtistBitmapAsyncTask extends AsyncTask<Void, Void, Bitmap>{
 
-        private FutureTarget<Bitmap> bm;
+        private FutureTarget<Bitmap> mBitmap;
         private ICallback mICallback;
 
-        public GetArtistBitmapAsyncTask(FutureTarget<Bitmap> bm, ICallback iCallback) {
-            this.bm = bm;
+
+        public GetArtistBitmapAsyncTask(FutureTarget<Bitmap> bitmap, ICallback iCallback) {
+            this.mBitmap = bitmap;
             this.mICallback = iCallback;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-        }
-
-        @Override
-        protected Bitmap doInBackground(Void... voids) {
-            try {
-                return bm.get();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            }
-            return null;
         }
 
         @Override
@@ -453,11 +409,26 @@ public class MediaService extends MediaBrowserServiceCompat {
             mICallback.done(bitmap);
         }
 
+        @Override
+        protected Bitmap doInBackground(Void... voids) {
+
+            try {
+                return mBitmap.get();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
     }
-
-
-
 }
+
+
+
+
+
+
 
 
 
