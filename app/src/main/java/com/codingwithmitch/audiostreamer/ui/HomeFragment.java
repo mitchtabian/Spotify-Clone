@@ -52,6 +52,12 @@ public class HomeFragment extends Fragment implements
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_home, container, false);
@@ -64,11 +70,12 @@ public class HomeFragment extends Fragment implements
     }
 
     private void initRecyclerView(View view){
-        if(mRecyclerView == null){
-            mRecyclerView = view.findViewById(R.id.recycler_view);
-            mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-            mAdapter = new HomeRecyclerAdapter(getActivity(), mCategories, this);
-            mRecyclerView.setAdapter(mAdapter);
+        mRecyclerView = view.findViewById(R.id.recycler_view);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        mAdapter = new HomeRecyclerAdapter(getActivity(), mCategories, this);
+        mRecyclerView.setAdapter(mAdapter);
+
+        if(mCategories.size() == 0){
             retrieveCategories();
         }
     }
